@@ -10,7 +10,7 @@ namespace MyRoomServer.Entities
         public Guid Id { get; set; }
 
         [MaxLength(64)]
-        public string NickName { get; set; } = null!;
+        public string NickName { get; set; } = string.Empty;
 
         [EmailAddress]
         [MaxLength(64)]

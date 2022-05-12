@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.EntityFrameworkCore;
 using MyRoomServer.Entities;
-using MyRoomServer.Models;
 using MyRoomServer.Services;
 using System.ComponentModel.DataAnnotations;
 
@@ -13,9 +12,9 @@ namespace MyRoomServer.Controllers
     public class AuthController : ControllerBase
     {
         private readonly MyRoomDbContext dbContext;
-        private readonly TokenFactory tokenFactory;
+        private readonly ITokenFactory tokenFactory;
 
-        public AuthController(MyRoomDbContext dbContext, TokenFactory tokenFactory)
+        public AuthController(MyRoomDbContext dbContext, ITokenFactory tokenFactory)
         {
             this.dbContext = dbContext;
             this.tokenFactory = tokenFactory;
@@ -23,19 +22,20 @@ namespace MyRoomServer.Controllers
 
         [AllowAnonymous]
         [HttpPost("login")]
-        public IActionResult Login([FromBody, Required, EmailAddress] string email,
-                                   [FromBody, Required] string password)
+        public IActionResult Login([FromForm, Required, EmailAddress] string email,
+                                   [FromForm, Required] string password)
         {
             // TODO º”√‹√‹¬Î
             var user = (from item in dbContext.Users
                         where item.Email == email
                         where item.Password == password
-                        select item).SingleOrDefault();
+                        select item).AsNoTracking().SingleOrDefault();
 
-            if (user == null)
+            if (user is null)
             {
-                return BadRequest("user not found.");
+                return BadRequest(new { Message = "”√ªß≤ª¥Ê‘⁄" });
             }
+
             var accessToken = tokenFactory.CreateAccessToken(user);
             var refreshToken = tokenFactory.CreateRefreshToken(user);
             return Ok(new
@@ -47,8 +47,8 @@ namespace MyRoomServer.Controllers
 
         [AllowAnonymous]
         [HttpPost("signup")]
-        public async Task<IActionResult> SignUpAsync([FromBody, Required, EmailAddress] string email,
-                                                     [FromBody, Required] string password)
+        public async Task<IActionResult> SignUpAsync([FromForm, Required, EmailAddress] string email,
+                                                     [FromForm, Required] string password)
         {
             #region ≈–∂œ” œ‰◊¢≤·
             var userQuery = dbContext.Users.Where(u => email == u.Email);
@@ -62,6 +62,7 @@ namespace MyRoomServer.Controllers
                 Email = email,
                 Password = password,
             });
+            await dbContext.SaveChangesAsync();
             return Ok(new { Message = "◊¢≤·≥…π¶" });
         }
     }
