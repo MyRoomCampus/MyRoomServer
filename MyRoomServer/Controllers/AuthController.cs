@@ -20,20 +20,58 @@ namespace MyRoomServer.Controllers
             this.tokenFactory = tokenFactory;
         }
 
+        /// <summary>
+        /// 用户注册
+        /// </summary>
+        /// <param name="username">用户名</param>
+        /// <param name="password">密码</param>
+        /// <response code="200">注册成功</response>
+        /// <response code="400">该用户名已被注册</response>
+        /// <returns></returns>
+        [AllowAnonymous]
+        [HttpPost("register")]
+        public async Task<IActionResult> RegisterAsync([FromForm, Required, MinLength(6)] string username, [FromForm, Required, MinLength(6)] string password)
+        {
+            var hasUser = (from item in dbContext.Users
+                        where item.UserName == username
+                        select item).AsNoTracking().Any();
+            if (hasUser)
+            {
+                return BadRequest();
+            }
+
+            await dbContext.Users.AddAsync(new User
+            {
+                UserName = username,
+                Password = password,
+            });
+
+            await dbContext.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// 用户登录
+        /// </summary>
+        /// <param name="username">用户名</param>
+        /// <param name="password">密码</param>
+        /// <response code="200">登录成功</response>
+        /// <response code="400">密码错误或用户不存在</response>
+        /// <returns></returns>
         [AllowAnonymous]
         [HttpPost("login")]
-        public IActionResult Login([FromForm, Required, EmailAddress] string email,
+        public IActionResult Login([FromForm, Required] string username,
                                    [FromForm, Required] string password)
         {
-            // TODO 加密密码
             var user = (from item in dbContext.Users
-                        where item.Email == email
+                        where item.UserName == username
                         where item.Password == password
                         select item).AsNoTracking().SingleOrDefault();
 
             if (user is null)
             {
-                return BadRequest(new { Message = "用户不存在" });
+                return BadRequest();
             }
 
             var accessToken = tokenFactory.CreateAccessToken(user);
@@ -43,27 +81,6 @@ namespace MyRoomServer.Controllers
                 accessToken,
                 refreshToken,
             });
-        }
-
-        [AllowAnonymous]
-        [HttpPost("signup")]
-        public async Task<IActionResult> SignUpAsync([FromForm, Required, EmailAddress] string email,
-                                                     [FromForm, Required] string password)
-        {
-            #region 判断邮箱注册
-            var userQuery = dbContext.Users.Where(u => email == u.Email);
-            if (userQuery.Any())
-            {
-                return BadRequest(new { Message = "邮箱已被注册" });
-            }
-            #endregion
-            await dbContext.Users.AddAsync(new User
-            {
-                Email = email,
-                Password = password,
-            });
-            await dbContext.SaveChangesAsync();
-            return Ok(new { Message = "注册成功" });
         }
     }
 }
