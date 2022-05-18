@@ -10,6 +10,7 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMemoryCache();
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 builder.Services.AddDbContext<MyRoomDbContext>(opt =>
 {
     opt.UseMySql(
@@ -47,10 +48,19 @@ builder.Services.AddTokenFactory(options =>
 });
 
 builder.Services.AddAuthorization(options =>
+{
     options.AddPolicy(IdentityPolicyNames.CommonUser, policy =>
     {
         policy.RequireClaim(ClaimTypes.NameIdentifier);
-    }));
+        policy.RequireClaim("TokenType", "AccessToken");
+    });
+    options.AddPolicy(IdentityPolicyNames.RefreshTokenOnly, policy =>
+    {
+        policy.RequireClaim(ClaimTypes.NameIdentifier);
+        policy.RequireClaim("TokenType", "RefreshToken");
+    });
+});
+    
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -65,7 +75,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+
 app.UseAuthorization();
+
+//app.UseWebSockets(new WebSocketOptions
+//{
+//    KeepAliveInterval = TimeSpan.FromMinutes(2)
+//});
 
 app.MapControllers();
 

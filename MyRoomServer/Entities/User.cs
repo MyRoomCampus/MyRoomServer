@@ -9,14 +9,8 @@ namespace MyRoomServer.Entities
         [Key]
         public Guid Id { get; set; }
 
-        [MaxLength(64)]
-        public string NickName { get; set; } = string.Empty;
-
-        [EmailAddress]
-        [MaxLength(64)]
-        public string Email { get; set; } = null!;
-
-        public long Phone { get; set; }
+        [MaxLength(64), MinLength(6)]
+        public string UserName { get; set; } = null!;
 
         [MaxLength(64)]
         public string Password { get; set; } = null!;
@@ -27,8 +21,7 @@ namespace MyRoomServer.Entities
         {
             var result = new Dictionary<string, string>(8)
             {
-                { nameof(Email), Email },
-                { nameof(NickName), NickName }
+                { nameof(UserName), UserName }
             };
 
             return result;

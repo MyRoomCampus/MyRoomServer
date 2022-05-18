@@ -2,8 +2,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyRoomServer.Entities;
+using MyRoomServer.Extentions;
+using MyRoomServer.Models;
 using MyRoomServer.Services;
 using System.ComponentModel.DataAnnotations;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace MyRoomServer.Controllers
 {
@@ -33,8 +37,8 @@ namespace MyRoomServer.Controllers
         public async Task<IActionResult> RegisterAsync([FromForm, Required, MinLength(6)] string username, [FromForm, Required, MinLength(6)] string password)
         {
             var hasUser = (from item in dbContext.Users
-                        where item.UserName == username
-                        select item).AsNoTracking().Any();
+                           where item.UserName == username
+                           select item).AsNoTracking().Any();
             if (hasUser)
             {
                 return BadRequest();
@@ -81,6 +85,62 @@ namespace MyRoomServer.Controllers
                 accessToken,
                 refreshToken,
             });
+        }
+
+        [HttpGet("test")]
+        [Authorize(Policy = IdentityPolicyNames.CommonUser)]
+        public IActionResult Test()
+        {
+            return Ok();
+        }
+
+        /// <summary>d
+        /// 刷新 AccessToken 及 RefreshToken
+        /// </summary>
+        /// <returns>新的 AccessToken，若 RefreshToken 即将过期，则同时刷新 AccessToken 和 RefreshToken</returns>
+        /// <response code="200">成功</response>
+        /// <response code="400">用户不存在</response>
+        /// <response code="401">userId 为 null</response>
+        [HttpGet("refresh")]
+        [Authorize(Policy = IdentityPolicyNames.RefreshTokenOnly)]
+        public async Task<IActionResult> RefreshTokenAsync()
+        {
+            var userId = User.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Single().Value;
+            if(userId == null)
+            {
+                return Unauthorized("userId is null.");
+            }
+            var user = await dbContext.Users.FindAsync(Guid.Parse(userId));
+            if(user == null)
+            {
+                return BadRequest("user not exist.");
+            }
+
+            var accessToken = tokenFactory.CreateAccessToken(user);
+
+            // 计算RefreshToken剩余有效期
+            var expireTime = User.Claims.Where(c => c.Type == JwtRegisteredClaimNames.Exp)
+                                         .Select(c => Convert.ToInt32(c.Value).ToDateTime())
+                                         .Single();
+            var remainMinutes = (int)(expireTime - DateTime.Now).TotalMinutes;
+
+            // RefreshToken即将过期，则同时刷新AccessToken和RefreshToken
+            if (remainMinutes < tokenFactory.RefreshTokenExpireBefore)
+            {
+                return Ok(new
+                {
+                    AccessToken = accessToken,
+                    RefreshToken = tokenFactory.CreateRefreshToken(user)
+                });
+            }
+            // 只刷新AccessToken
+            else
+            {
+                return Ok(new
+                {
+                    AccessToken = accessToken
+                });
+            }
         }
     }
 }
