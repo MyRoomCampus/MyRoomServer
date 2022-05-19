@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using MyRoomServer.Models;
+﻿using MyRoomServer.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace MyRoomServer.Entities
