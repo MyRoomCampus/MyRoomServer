@@ -3,7 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MyRoomServer.Entities;
 using MyRoomServer.Extentions;
+using MyRoomServer.Hubs;
 using MyRoomServer.Models;
+using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 
@@ -60,10 +62,14 @@ builder.Services.AddAuthorization(options =>
         policy.RequireClaim("TokenType", "RefreshToken");
     });
 });
-    
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
+});
 
 var app = builder.Build();
 

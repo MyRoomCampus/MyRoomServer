@@ -17,11 +17,13 @@ namespace MyRoomServer.Controllers
     {
         private readonly MyRoomDbContext dbContext;
         private readonly ITokenFactory tokenFactory;
+        private readonly string salt;
 
-        public AuthController(MyRoomDbContext dbContext, ITokenFactory tokenFactory)
+        public AuthController(MyRoomDbContext dbContext, ITokenFactory tokenFactory, IConfiguration configuration)
         {
             this.dbContext = dbContext;
             this.tokenFactory = tokenFactory;
+            this.salt = configuration.GetValue<string>("PasswordSalt");
         }
 
         /// <summary>
@@ -47,7 +49,7 @@ namespace MyRoomServer.Controllers
             await dbContext.Users.AddAsync(new User
             {
                 UserName = username,
-                Password = password,
+                Password = password.Sha256(salt),
             });
 
             await dbContext.SaveChangesAsync();
@@ -65,12 +67,12 @@ namespace MyRoomServer.Controllers
         /// <returns></returns>
         [AllowAnonymous]
         [HttpPost("login")]
-        public IActionResult Login([FromForm, Required] string username,
-                                   [FromForm, Required] string password)
+        public IActionResult Login([FromForm, Required, MinLength(6)] string username,
+                                   [FromForm, Required, MinLength(6)] string password)
         {
             var user = (from item in dbContext.Users
                         where item.UserName == username
-                        where item.Password == password
+                        where item.Password == password.Sha256(salt)
                         select item).AsNoTracking().SingleOrDefault();
 
             if (user is null)
@@ -106,12 +108,12 @@ namespace MyRoomServer.Controllers
         public async Task<IActionResult> RefreshTokenAsync()
         {
             var userId = User.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Single().Value;
-            if(userId == null)
+            if (userId == null)
             {
                 return Unauthorized("userId is null.");
             }
             var user = await dbContext.Users.FindAsync(Guid.Parse(userId));
-            if(user == null)
+            if (user == null)
             {
                 return BadRequest("user not exist.");
             }

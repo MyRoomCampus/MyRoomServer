@@ -16,7 +16,7 @@ namespace MyRoomServer.Entities
         public string ClaimValue { get; set; } = null!;
 
         [ForeignKey(nameof(UserId))]
-        public User User { get; set; } = null!;
+        public User User { get; } = null!;
 
         public Guid UserId { get; set; }
     }
