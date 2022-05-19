@@ -12,7 +12,8 @@ namespace MyRoomServer.Entities
         /// 项目Id
         /// </summary>
         [Key]
-        public long Id { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long Id { get; init; }
 
         /// <summary>
         /// 项目名称
@@ -22,17 +23,18 @@ namespace MyRoomServer.Entities
         /// <summary>
         /// 用户Id
         /// </summary>
-        public Guid UserId { get; private set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// 所属用户
         /// </summary>
         [ForeignKey("UserId")]
-        public User User { get; set; } = null!;
+        public User User { get; } = null!;
 
         /// <summary>
         /// 创建时间
         /// </summary>
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime CreatedAt { get; init; }
 
         /// <summary>
@@ -40,17 +42,10 @@ namespace MyRoomServer.Entities
         /// </summary>
         public object TransferData => new
         {
-            Id, Name, CreatedAt
+            Id,
+            Name,
+            CreatedAt
         };
-
-        /// <summary>
-        /// 绑定用户
-        /// </summary>
-        /// <param name="guid">用户Id</param>
-        public void BindUser(Guid guid)
-        {
-            UserId = guid;
-        }
 
         /// <summary>
         /// 更新对象信息
