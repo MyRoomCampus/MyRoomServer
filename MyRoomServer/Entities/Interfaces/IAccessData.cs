@@ -1,4 +1,4 @@
-﻿namespace MyRoomServer.Entities
+﻿namespace MyRoomServer.Entities.Interfaces
 {
     /// <summary>
     /// 数据访问对象接口
