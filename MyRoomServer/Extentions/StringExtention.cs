@@ -9,8 +9,8 @@ namespace MyRoomServer.Extentions
         {
             using var sha256 = SHA256.Create();
             var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(str + salt));
-            StringBuilder stringbuilder = new StringBuilder();
-            for (int i = 0; i < bytes.Length; i++)
+            var stringbuilder = new StringBuilder();
+            for (var i = 0; i < bytes.Length; i++)
             {
                 stringbuilder.Append(bytes[i].ToString("x2"));
             }
