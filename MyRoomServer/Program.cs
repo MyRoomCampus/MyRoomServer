@@ -63,6 +63,7 @@ builder.Services.AddAuthorization(options =>
     });
 });
 
+builder.Services.AddMemoryCache();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -90,6 +91,7 @@ app.UseAuthorization();
 //    KeepAliveInterval = TimeSpan.FromMinutes(2)
 //});
 
+app.MapHub<VideoHub>("/hub/video");
 app.MapControllers();
 
 app.Run();
