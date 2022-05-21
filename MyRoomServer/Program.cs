@@ -10,9 +10,21 @@ using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+var myAllowSpecificOrigins = "myAllowSpecificOrigins";
+
 builder.Services.AddMemoryCache();
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: myAllowSpecificOrigins,
+                      policy =>
+                      {
+                          policy.WithOrigins(builder.Configuration["AllowedHosts"]);
+                          policy.AllowCredentials();
+                          policy.AllowAnyHeader();
+                      });
+});
 builder.Services.AddDbContext<MyRoomDbContext>(opt =>
 {
     opt.UseMySql(
@@ -81,6 +93,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(myAllowSpecificOrigins);
 
 app.UseAuthentication();
 
