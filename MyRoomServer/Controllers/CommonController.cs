@@ -15,6 +15,10 @@ namespace MyRoomServer.Controllers
     [Route("common")]
     public class CommonController : ControllerBase
     {
+        /// <summary>
+        /// 项目存活测试
+        /// </summary>
+        /// <returns></returns>
         [AllowAnonymous]
         [HttpGet]
         public IActionResult Ping()

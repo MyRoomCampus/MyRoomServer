@@ -34,7 +34,7 @@ namespace MyRoomServer.Controllers
                                          .Take(perpage)
                                          .AsNoTracking()
                                          .ToListAsync();
-            return Ok(res);
+            return Ok(new ApiRes("获取成功", res));
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace MyRoomServer.Controllers
             {
                 return NotFound();
             }
-            return Ok(project.TransferData);
+            return Ok(new ApiRes("获取成功", project.TransferData));
         }
 
         [HttpPost]
@@ -60,7 +60,7 @@ namespace MyRoomServer.Controllers
         {
             project.UserId = Guid.Parse(this.GetUserId());
             dbContext.Projects.Add(project);
-            return Ok();
+            return Ok(new ApiRes("上传成功"));
         }
 
         /// <summary>
@@ -80,10 +80,10 @@ namespace MyRoomServer.Controllers
                 .FirstOrDefault();
             if (project == null)
             {
-                return NotFound();
+                return NotFound(new ApiRes("项目不存在"));
             }
             project = newProject;
-            return Ok();
+            return Ok(new ApiRes("更新成功"));
         }
 
         /// <summary>
@@ -101,14 +101,14 @@ namespace MyRoomServer.Controllers
             var project = await dbContext.Projects.FindAsync(id);
             if (project == null)
             {
-                return NotFound();
+                return NotFound(new ApiRes("项目不存在"));
             }
             var uid = this.GetUserId();
             if (project.UserId.ToString() != uid)
             {
-                return Unauthorized();
+                return Unauthorized(new ApiRes("此项目并不属于该用户"));
             }
-            return Ok(project.TransferData);
+            return Ok(new ApiRes("删除成功" ,project.TransferData));
         }
     }
 }
