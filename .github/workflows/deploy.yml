@@ -1,0 +1,17 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - name: Deploy on server
+        run: |
+          cd ~/code/MyRoomServer
+          git fetch --all
+          git reset --hard origin/master
+          cp ../configs/appsettings.Production.json ./MyRoomServer/
+          docker compose up -d --build
