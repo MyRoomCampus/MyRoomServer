@@ -20,6 +20,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: myAllowSpecificOrigins,
                       policy =>
                       {
+                          Console.WriteLine($"AllowedHosts: {builder.Configuration["AllowedHosts"]}");
                           policy.WithOrigins(builder.Configuration["AllowedHosts"]);
                           policy.AllowCredentials();
                           policy.AllowAnyHeader();
