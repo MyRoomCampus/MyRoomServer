@@ -5,13 +5,21 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  deploy:
     runs-on: self-hosted
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Deploy on server
+        env:
+          ASPNETCORE_ENVIRONMENT: Production
+          DEPLOY_PORT: 5000
+          AllowedHosts: "${{secrets.ALLOWEDHOSTS}}"
+          ConnectionStrings__MyRoom: ${{secrets.CONNECTIONSTRINGS__MYROOM}}
+          Jwt__SecurityKey: ${{secrets.JWT__SECURITYKEY}}
+          PasswordSalt: ${{secrets.PASSWORDSALT}}
         run: |
-          cd ~/code/MyRoomServer
-          git fetch --all
-          git reset --hard origin/master
-          cp ../configs/appsettings.Production.json ./MyRoomServer/
           docker compose up -d --build
