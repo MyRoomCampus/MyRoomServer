@@ -21,20 +21,19 @@ RefreshToken 用于获取新的 AccessToken。
 
 #### 如何使用
 
-携带 header `Authorization: "Bearer {AccessToken}"` 访问需要鉴权的资源
+- 携带 header `Authorization: "Bearer {AccessToken}"` 访问需要鉴权的资源
 
-携带 header `Authorization: "Bearer {RefreshToken}"` 刷新 Token
+- 携带 header `Authorization: "Bearer {RefreshToken}"` 刷新 Token
 
-JWT分为三个部分。HEADER，PAYLOAD，VERIFY SIGNATURE，以'.'分割,使用 base64 编码。
+JWT分为三个部分。HEADER、PAYLOAD、VERIFY SIGNATURE，以'.'分割，使用 base64 编码。
 那么获取过期时间就可以..
 
 ```javascript
-let scenarios = accessToken.split('.')
-let payloadCoded = scenarios[1]
-let payload = JSON.parse(atob(payload))
-let exp = payload['exp']
+let parts = accessToken.split('.')        // 分割 token
+let payloadCoded = parts[1]               // 获取 base64 编码过的 payload
+let payload = JSON.parse(atob(payload))   // base64 解码 读取 JSON
+let exp = payload['exp']                  // 获取过期时间
 ```
-
 
 #### 用户注册
 
@@ -67,8 +66,12 @@ AccessToken有效期为60分钟，RefreshToken有效期为432000分钟，当Refr
 
 ## 代码提交
 
+Commit message 使用 [Angular 规范](https://www.ruanyifeng.com/blog/2016/01/commit_message_change_log.html)
 
+向主分支的提交需提交 Pull Request，并使用 squash merge
 
 ## 项目部署
 
-...
+使用 docker 部署项目，在项目根目录下运行 `docker compose up` 即可。
+
+注意需要配置相应的环境变量，详见 [docker-compose.yml](docker-compose.yml)
