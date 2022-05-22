@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+ï»¿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyRoomServer.Entities;
@@ -27,25 +27,25 @@ namespace MyRoomServer.Controllers
         }
 
         /// <summary>
-        /// ÓÃ»§×¢²á
+        /// ç”¨æˆ·æ³¨å†Œ
         /// </summary>
-        /// <param name="username">ÓÃ»§Ãû</param>
-        /// <param name="password">ÃÜÂë</param>
-        /// <response code="200">×¢²á³É¹¦</response>
-        /// <response code="400">¸ÃÓÃ»§ÃûÒÑ±»×¢²á</response>
+        /// <param name="username">ç”¨æˆ·å</param>
+        /// <param name="password">å¯†ç </param>
+        /// <response code="200">æ³¨å†ŒæˆåŠŸ</response>
+        /// <response code="400">è¯¥ç”¨æˆ·åå·²è¢«æ³¨å†Œ</response>
         /// <returns></returns>
         [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> RegisterAsync(
-            [FromForm, Required, MinLength(6, ErrorMessage = "username ³¤¶È±ØĞë´óÓÚ6")] string username,
-            [FromForm, Required, MinLength(6, ErrorMessage = "password ³¤¶È±ØĞë´óÓÚ6")] string password)
+            [FromForm, Required, MinLength(6, ErrorMessage = "username é•¿åº¦å¿…é¡»å¤§äº6")] string username,
+            [FromForm, Required, MinLength(6, ErrorMessage = "password é•¿åº¦å¿…é¡»å¤§äº6")] string password)
         {
             var hasUser = (from item in dbContext.Users
                            where item.UserName == username
                            select item).AsNoTracking().Any();
             if (hasUser)
             {
-                return BadRequest(new ApiRes("¸ÃÓÃ»§ÃûÒÑ×¢²á"));
+                return BadRequest(new ApiRes("è¯¥ç”¨æˆ·åå·²æ³¨å†Œ"));
             }
 
             await dbContext.Users.AddAsync(new User
@@ -56,16 +56,16 @@ namespace MyRoomServer.Controllers
 
             await dbContext.SaveChangesAsync();
 
-            return Ok(new ApiRes("ÓÃ»§×¢²á³É¹¦"));
+            return Ok(new ApiRes("ç”¨æˆ·æ³¨å†ŒæˆåŠŸ"));
         }
 
         /// <summary>
-        /// ÓÃ»§µÇÂ¼
+        /// ç”¨æˆ·ç™»å½•
         /// </summary>
-        /// <param name="username">ÓÃ»§Ãû</param>
-        /// <param name="password">ÃÜÂë</param>
-        /// <response code="200">µÇÂ¼³É¹¦</response>
-        /// <response code="400">ÃÜÂë´íÎó»òÓÃ»§²»´æÔÚ</response>
+        /// <param name="username">ç”¨æˆ·å</param>
+        /// <param name="password">å¯†ç </param>
+        /// <response code="200">ç™»å½•æˆåŠŸ</response>
+        /// <response code="400">å¯†ç é”™è¯¯æˆ–ç”¨æˆ·ä¸å­˜åœ¨</response>
         /// <returns></returns>
         [AllowAnonymous]
         [HttpPost("login")]
@@ -79,7 +79,7 @@ namespace MyRoomServer.Controllers
 
             if (user is null)
             {
-                return BadRequest(new ApiRes("ÃÜÂë´íÎó»òÓÃ»§²»´æÔÚ"));
+                return BadRequest(new ApiRes("å¯†ç é”™è¯¯æˆ–ç”¨æˆ·ä¸å­˜åœ¨"));
             }
 
             var accessToken = tokenFactory.CreateAccessToken(user);
@@ -92,46 +92,46 @@ namespace MyRoomServer.Controllers
         }
 
         /// <summary>
-        /// ÓÃ»§È¨ÏŞ²âÊÔ
+        /// ç”¨æˆ·æƒé™æµ‹è¯•
         /// </summary>
         /// <returns></returns>
         [HttpGet("test")]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
         public IActionResult Test()
         {
-            return Ok(new ApiRes("¼øÈ¨³É¹¦"));
+            return Ok(new ApiRes("é‰´æƒæˆåŠŸ"));
         }
 
         /// <summary>
-        /// Ë¢ĞÂ AccessToken ¼° RefreshToken
+        /// åˆ·æ–° AccessToken åŠ RefreshToken
         /// </summary>
-        /// <returns>ĞÂµÄ AccessToken£¬Èô RefreshToken ¼´½«¹ıÆÚ£¬ÔòÍ¬Ê±Ë¢ĞÂ AccessToken ºÍ RefreshToken</returns>
-        /// <response code="200">³É¹¦</response>
-        /// <response code="400">ÓÃ»§²»´æÔÚ</response>
-        /// <response code="401">userId Îª null£¬RefreshToken¹ıÆÚ</response>
+        /// <returns>æ–°çš„ AccessTokenï¼Œè‹¥ RefreshToken å³å°†è¿‡æœŸï¼Œåˆ™åŒæ—¶åˆ·æ–° AccessToken å’Œ RefreshToken</returns>
+        /// <response code="200">æˆåŠŸ</response>
+        /// <response code="400">ç”¨æˆ·ä¸å­˜åœ¨</response>
+        /// <response code="401">userId ä¸º nullï¼ŒRefreshTokenè¿‡æœŸ</response>
         [HttpGet("refresh")]
         [Authorize(Policy = IdentityPolicyNames.RefreshTokenOnly)]
         public async Task<IActionResult> RefreshTokenAsync()
         {
             var userId = User.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Single().Value 
-                ?? throw new Exception("userId ²»¿ÉÄÜÎª null");
+                ?? throw new Exception("userId ä¸å¯èƒ½ä¸º null");
 
             var user = await dbContext.Users.FindAsync(Guid.Parse(userId));
             if (user == null)
             {
-                return BadRequest(new ApiRes("ÓÃ»§²»´æÔÚ"));
+                return BadRequest(new ApiRes("ç”¨æˆ·ä¸å­˜åœ¨"));
             }
 
             var accessToken = tokenFactory.CreateAccessToken(user);
 
-            // ¼ÆËãRefreshTokenÊ£ÓàÓĞĞ§ÆÚ
+            // è®¡ç®—RefreshTokenå‰©ä½™æœ‰æ•ˆæœŸ
             var expireTime = User.Claims.Where(c => c.Type == JwtRegisteredClaimNames.Exp)
                                          .Select(c => Convert.ToInt32(c.Value).ToDateTime())
                                          .Single();
 
             var remainMinutes = (int)(expireTime - DateTime.Now).TotalMinutes;
 
-            // RefreshToken¼´½«¹ıÆÚ£¬ÔòÍ¬Ê±Ë¢ĞÂAccessTokenºÍRefreshToken
+            // RefreshTokenå³å°†è¿‡æœŸï¼Œåˆ™åŒæ—¶åˆ·æ–°AccessTokenå’ŒRefreshToken
             if (remainMinutes < tokenFactory.RefreshTokenExpireBefore)
             {
                 return Ok(new
@@ -141,7 +141,7 @@ namespace MyRoomServer.Controllers
                 });
             }
 
-            // Ö»Ë¢ĞÂAccessToken
+            // åªåˆ·æ–°AccessToken
             else
             {
                 return Ok(new
