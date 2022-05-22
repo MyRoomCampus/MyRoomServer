@@ -96,7 +96,7 @@ namespace MyRoomServer.Controllers
             return Ok();
         }
 
-        /// <summary>d
+        /// <summary>
         /// 刷新 AccessToken 及 RefreshToken
         /// </summary>
         /// <returns>新的 AccessToken，若 RefreshToken 即将过期，则同时刷新 AccessToken 和 RefreshToken</returns>

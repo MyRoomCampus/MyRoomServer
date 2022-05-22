@@ -6,22 +6,15 @@ EXPOSE 80
 EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
-RUN dotnet tool install --global dotnet-ef
-ARG APP_DBCONN
-ARG BuildConfig
-ARG ASPNETCORE_ENVIRONMENT
 WORKDIR /src
 COPY ["MyRoomServer/MyRoomServer.csproj", "MyRoomServer/"]
 RUN dotnet restore "MyRoomServer/MyRoomServer.csproj"
 COPY . .
 WORKDIR "/src/MyRoomServer"
-RUN dotnet build "MyRoomServer.csproj" -c ${BuildConfig} -o /app/build && \
-	/root/.dotnet/tools/dotnet-ef database update --configuration ${BuildConfig}
+RUN dotnet build "MyRoomServer.csproj" -c Release -o /app/build
 
 FROM build AS publish
-ARG BuildConfig
-ARG ASPNETCORE_ENVIRONMENT
-RUN dotnet publish "MyRoomServer.csproj" -c ${BuildConfig} -o /app/publish
+RUN dotnet publish "MyRoomServer.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app

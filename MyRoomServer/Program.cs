@@ -10,9 +10,22 @@ using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+var myAllowSpecificOrigins = "myAllowSpecificOrigins";
+
 builder.Services.AddMemoryCache();
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: myAllowSpecificOrigins,
+                      policy =>
+                      {
+                          Console.WriteLine($"AllowedHosts: {builder.Configuration["AllowedHosts"]}");
+                          policy.WithOrigins(builder.Configuration["AllowedHosts"]);
+                          policy.AllowCredentials();
+                          policy.AllowAnyHeader();
+                      });
+});
 builder.Services.AddDbContext<MyRoomDbContext>(opt =>
 {
     opt.UseMySql(
@@ -63,6 +76,7 @@ builder.Services.AddAuthorization(options =>
     });
 });
 
+builder.Services.AddMemoryCache();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -79,7 +93,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
+
+app.UseCors(myAllowSpecificOrigins);
 
 app.UseAuthentication();
 
@@ -90,6 +106,7 @@ app.UseAuthorization();
 //    KeepAliveInterval = TimeSpan.FromMinutes(2)
 //});
 
+app.MapHub<VideoHub>("/hub/video");
 app.MapControllers();
 
 app.Run();
