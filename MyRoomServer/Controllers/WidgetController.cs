@@ -18,6 +18,11 @@ namespace MyRoomServer.Controllers
             this.dbContext = dbContext;
         }
 
+        /// <summary>
+        /// 获取一个组件
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAsync(long id)
         {
@@ -26,9 +31,14 @@ namespace MyRoomServer.Controllers
             {
                 return NotFound();
             }
-            return Ok(widget.TransferData);
+            return Ok(new ApiRes("获取成功", widget.TransferData));
         }
 
+        /// <summary>
+        /// 添加一个组件
+        /// </summary>
+        /// <param name="widget"></param>
+        /// <returns></returns>
         [HttpPost]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
         public async Task<IActionResult> Post([FromBody] Widget widget)
@@ -44,14 +54,20 @@ namespace MyRoomServer.Controllers
 
             if (!hasProject)
             {
-                return BadRequest();
+                return BadRequest(new ApiRes("项目不存在"));
             }
 
             await dbContext.Widgets.AddAsync(widget);
             await dbContext.SaveChangesAsync();
-            return Ok();
+            return Ok(new ApiRes("添加成功"));
         }
 
+        /// <summary>
+        /// 修改一个组件
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="widget"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
         public async Task<IActionResult> PutAsync([FromRoute] int id, [FromBody] Widget widget)
@@ -65,13 +81,18 @@ namespace MyRoomServer.Controllers
                               .Any();
             if (!hasProject)
             {
-                return BadRequest();
+                return BadRequest(new ApiRes("项目不存在"));
             }
             dbContext.Widgets.Update(widget);
             await dbContext.SaveChangesAsync();
-            return Ok();
+            return Ok(new ApiRes("修改成功"));
         }
 
+        /// <summary>
+        /// 删除一个组件
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
@@ -79,10 +100,10 @@ namespace MyRoomServer.Controllers
             var widget = await (from item in dbContext.Widgets
                                 where item.Id == id
                                 select item).SingleOrDefaultAsync();
-            // TODO 以0判断并不健壮
+
             if (widget == null)
             {
-                return BadRequest();
+                return BadRequest(new ApiRes("组件不存在"));
             }
 
             var uid = this.GetUserId();
@@ -95,12 +116,12 @@ namespace MyRoomServer.Controllers
 
             if (!hasProject)
             {
-                return BadRequest();
+                return BadRequest(new ApiRes("项目不存在"));
             }
 
             dbContext.Widgets.Remove(widget);
             await dbContext.SaveChangesAsync();
-            return Ok();
+            return Ok(new ApiRes("组件删除成功"));
         }
     }
 }

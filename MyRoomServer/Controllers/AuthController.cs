@@ -36,14 +36,16 @@ namespace MyRoomServer.Controllers
         /// <returns></returns>
         [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<IActionResult> RegisterAsync([FromForm, Required, MinLength(6)] string username, [FromForm, Required, MinLength(6)] string password)
+        public async Task<IActionResult> RegisterAsync(
+            [FromForm, Required, MinLength(6, ErrorMessage = "username 长度必须大于6")] string username,
+            [FromForm, Required, MinLength(6, ErrorMessage = "password 长度必须大于6")] string password)
         {
             var hasUser = (from item in dbContext.Users
                            where item.UserName == username
                            select item).AsNoTracking().Any();
             if (hasUser)
             {
-                return BadRequest();
+                return BadRequest(new ApiRes("该用户名已注册"));
             }
 
             await dbContext.Users.AddAsync(new User
@@ -54,7 +56,7 @@ namespace MyRoomServer.Controllers
 
             await dbContext.SaveChangesAsync();
 
-            return Ok();
+            return Ok(new ApiRes("用户注册成功"));
         }
 
         /// <summary>
@@ -77,7 +79,7 @@ namespace MyRoomServer.Controllers
 
             if (user is null)
             {
-                return BadRequest();
+                return BadRequest(new ApiRes("密码错误或用户不存在"));
             }
 
             var accessToken = tokenFactory.CreateAccessToken(user);
@@ -89,11 +91,15 @@ namespace MyRoomServer.Controllers
             });
         }
 
+        /// <summary>
+        /// 用户权限测试
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("test")]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
         public IActionResult Test()
         {
-            return Ok();
+            return Ok(new ApiRes("鉴权成功"));
         }
 
         /// <summary>
@@ -102,20 +108,18 @@ namespace MyRoomServer.Controllers
         /// <returns>新的 AccessToken，若 RefreshToken 即将过期，则同时刷新 AccessToken 和 RefreshToken</returns>
         /// <response code="200">成功</response>
         /// <response code="400">用户不存在</response>
-        /// <response code="401">userId 为 null</response>
+        /// <response code="401">userId 为 null，RefreshToken过期</response>
         [HttpGet("refresh")]
         [Authorize(Policy = IdentityPolicyNames.RefreshTokenOnly)]
         public async Task<IActionResult> RefreshTokenAsync()
         {
-            var userId = User.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Single().Value;
-            if (userId == null)
-            {
-                return Unauthorized("userId is null.");
-            }
+            var userId = User.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Single().Value 
+                ?? throw new Exception("userId 不可能为 null");
+
             var user = await dbContext.Users.FindAsync(Guid.Parse(userId));
             if (user == null)
             {
-                return BadRequest("user not exist.");
+                return BadRequest(new ApiRes("用户不存在"));
             }
 
             var accessToken = tokenFactory.CreateAccessToken(user);
@@ -124,6 +128,7 @@ namespace MyRoomServer.Controllers
             var expireTime = User.Claims.Where(c => c.Type == JwtRegisteredClaimNames.Exp)
                                          .Select(c => Convert.ToInt32(c.Value).ToDateTime())
                                          .Single();
+
             var remainMinutes = (int)(expireTime - DateTime.Now).TotalMinutes;
 
             // RefreshToken即将过期，则同时刷新AccessToken和RefreshToken
@@ -135,6 +140,7 @@ namespace MyRoomServer.Controllers
                     RefreshToken = tokenFactory.CreateRefreshToken(user)
                 });
             }
+
             // 只刷新AccessToken
             else
             {
