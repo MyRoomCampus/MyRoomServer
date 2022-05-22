@@ -27,7 +27,11 @@ accessToken 为用户访问接口使用，当 accessToken 过期时，可携带 
 
 #### 刷新Token
 
-携带 refreshToken 访问。刷新AccessToken和RefreshToken。当RefreshToken未临期时，只返回新的AccessToken；当RefreshToken临期时，同时返回新的AccessToken和RefreshToken。AccessToken有效期为60分钟，RefreshToken有效期为432000分钟，当RefreshToken剩余有效期不足10080分钟时进入临期状态
+携带 refreshToken 访问。刷新AccessToken和RefreshToken。
+
+当RefreshToken未临期时，只返回新的AccessToken；当RefreshToken临期时，同时返回新的AccessToken和RefreshToken。
+
+AccessToken有效期为60分钟，RefreshToken有效期为432000分钟，当RefreshToken剩余有效期不足10080分钟时进入临期状态。
 
 ### SignalR
 
