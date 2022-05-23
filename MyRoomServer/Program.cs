@@ -10,7 +10,6 @@ using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-var myAllowSpecificOrigins = "myAllowSpecificOrigins";
 
 Console.WriteLine($"AllowedHosts: {builder.Configuration["AllowedHosts"]}");
 Console.WriteLine($"ASPNETCORE_ENVIRONMENT: {builder.Configuration["ASPNETCORE_ENVIRONMENT"]}");
@@ -20,10 +19,9 @@ builder.Services.AddControllers();
 builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: myAllowSpecificOrigins,
-                      policy =>
+    options.AddDefaultPolicy(policy =>
                       {
-                          policy.WithOrigins(builder.Configuration["AllowedHosts"].Split(';'));
+                          policy.WithOrigins(builder.Configuration["AllowedOrigins"].Split(';'));
                           policy.AllowCredentials();
                           policy.AllowAnyHeader();
                           policy.AllowAnyMethod();
@@ -100,7 +98,7 @@ if (app.Environment.IsDevelopment())
 
 //app.UseHttpsRedirection();
 
-app.UseCors(myAllowSpecificOrigins);
+app.UseCors();
 
 app.UseAuthentication();
 

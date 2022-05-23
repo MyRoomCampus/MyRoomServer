@@ -16,7 +16,7 @@ jobs:
         env:
           ASPNETCORE_ENVIRONMENT: Production
           DEPLOY_PORT: 5000
-          AllowedHosts: "${{secrets.ALLOWEDHOSTS}}"
+          AllowedOrigins: "${{secrets.ALLOWEDORIGINS}}"
           ConnectionStrings__MyRoom: ${{secrets.CONNECTIONSTRINGS__MYROOM}}
           Jwt__SecurityKey: ${{secrets.JWT__SECURITYKEY}}
           PasswordSalt: ${{secrets.PASSWORDSALT}}

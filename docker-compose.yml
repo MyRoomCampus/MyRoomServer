@@ -8,7 +8,7 @@ services:
     environment:
       - TZ=Asia/Shanghai
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:?}
-      - AllowedHosts=${AllowedHosts:?}
+      - AllowedOrigins=${AllowedOrigins:?}
       - ConnectionStrings__MyRoom=${ConnectionStrings__MyRoom:?}
       - Jwt__SecurityKey=${Jwt__SecurityKey:?}
       - PasswordSalt=${PasswordSalt:?}
