@@ -23,9 +23,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: myAllowSpecificOrigins,
                       policy =>
                       {
-                          policy.WithOrigins(builder.Configuration["AllowedHosts"]);
+                          policy.WithOrigins(builder.Configuration["AllowedHosts"].Split(';'));
                           policy.AllowCredentials();
                           policy.AllowAnyHeader();
+                          policy.AllowAnyMethod();
                       });
 });
 builder.Services.AddDbContext<MyRoomDbContext>(opt =>

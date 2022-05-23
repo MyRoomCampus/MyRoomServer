@@ -36,6 +36,8 @@ namespace MyRoomServer.Controllers
         /// <returns></returns>
         [AllowAnonymous]
         [HttpPost("register")]
+        [ProducesResponseType(typeof(ApiRes), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiRes), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> RegisterAsync(
             [FromForm, Required, MinLength(6, ErrorMessage = "username 长度必须大于6")] string username,
             [FromForm, Required, MinLength(6, ErrorMessage = "password 长度必须大于6")] string password)
@@ -69,6 +71,7 @@ namespace MyRoomServer.Controllers
         /// <returns></returns>
         [AllowAnonymous]
         [HttpPost("login")]
+        [Produces(typeof(ApiRes))]
         public IActionResult Login([FromForm, Required, MinLength(6)] string username,
                                    [FromForm, Required, MinLength(6)] string password)
         {
