@@ -56,10 +56,11 @@ namespace MyRoomServer.Controllers
 
         [HttpPost]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
-        public IActionResult Post([FromBody] Project project)
+        public async Task<IActionResult> PostAsync([FromBody] Project project)
         {
             project.UserId = Guid.Parse(this.GetUserId());
-            dbContext.Projects.Add(project);
+            await dbContext.Projects.AddAsync(project);
+            await dbContext.SaveChangesAsync();
             return Ok(new ApiRes("上传成功"));
         }
 
@@ -71,18 +72,20 @@ namespace MyRoomServer.Controllers
         /// <returns></returns>
         [HttpPut("{id}")]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
-        public IActionResult Put([FromRoute] long id, [FromBody] Project newProject)
+        public async Task<IActionResult> PutAsync([FromRoute] long id, [FromBody] Project newProject)
         {
             var uid = this.GetUserId();
-            var project = dbContext.Projects
+            var project = await dbContext.Projects
                 .Where(p => p.Id == id)
                 .Where(p => p.UserId.ToString() == uid)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
             if (project == null)
             {
                 return NotFound(new ApiRes("项目不存在"));
             }
+            // todo record = 需要测试是否健壮
             project = newProject;
+            await dbContext.SaveChangesAsync();
             return Ok(new ApiRes("更新成功"));
         }
 
@@ -108,6 +111,8 @@ namespace MyRoomServer.Controllers
             {
                 return Unauthorized(new ApiRes("此项目并不属于该用户"));
             }
+            dbContext.Projects.Remove(project);
+            await dbContext.SaveChangesAsync();
             return Ok(new ApiRes("删除成功", project.TransferData));
         }
     }
