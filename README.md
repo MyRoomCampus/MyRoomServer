@@ -60,6 +60,10 @@ accessToken 为用户访问接口使用，当 accessToken 过期时，可携带 
 
 AccessToken有效期为60分钟，RefreshToken有效期为432000分钟，当RefreshToken剩余有效期不足10080分钟时进入临期状态。
 
+#### 登录流程
+
+![登录流程](docs/images/%E6%B5%81%E7%A8%8B.drawio.svg)
+
 ### SignalR
 
 待写...
@@ -71,6 +75,12 @@ Commit message 使用 [Angular 规范](https://www.ruanyifeng.com/blog/2016/01/c
 向主分支的提交需提交 Pull Request，并使用 squash merge
 
 ## 项目部署
+
+### 自动部署
+
+当 master 分支发生 push 动作是进行部署。
+
+### 手动部署
 
 使用 docker 部署项目，在项目根目录下运行 `docker compose up` 即可。
 
