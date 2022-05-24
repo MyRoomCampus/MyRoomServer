@@ -108,7 +108,7 @@ namespace MyRoomServer.Controllers
             {
                 return Unauthorized(new ApiRes("此项目并不属于该用户"));
             }
-            return Ok(new ApiRes("删除成功" ,project.TransferData));
+            return Ok(new ApiRes("删除成功", project.TransferData));
         }
     }
 }
