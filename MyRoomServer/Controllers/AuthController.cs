@@ -116,9 +116,7 @@ namespace MyRoomServer.Controllers
         [Authorize(Policy = IdentityPolicyNames.RefreshTokenOnly)]
         public async Task<IActionResult> RefreshTokenAsync()
         {
-            var userId = User.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Single().Value
-                ?? throw new Exception("userId 不可能为 null");
-
+            var userId = this.GetUserId();
             var user = await dbContext.Users.FindAsync(Guid.Parse(userId));
             if (user == null)
             {
