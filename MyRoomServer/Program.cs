@@ -69,6 +69,7 @@ builder.Services.AddAuthorization(options =>
     {
         policy.RequireClaim(ClaimTypes.NameIdentifier);
         policy.RequireClaim("TokenType", "AccessToken");
+        policy.RequireClaim("UserName");
     });
     options.AddPolicy(IdentityPolicyNames.RefreshTokenOnly, policy =>
     {
@@ -104,12 +105,7 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-//app.UseWebSockets(new WebSocketOptions
-//{
-//    KeepAliveInterval = TimeSpan.FromMinutes(2)
-//});
-
-app.MapHub<VideoHub>("/hub/video");
+app.MapHub<ProjectHub>("/hub/project");
 app.MapControllers();
 
 app.Run();

@@ -39,8 +39,8 @@ namespace MyRoomServer.Controllers
         [ProducesResponseType(typeof(ApiRes), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiRes), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> RegisterAsync(
-            [FromForm, Required, MinLength(6, ErrorMessage = "username 长度必须大于6")] string username,
-            [FromForm, Required, MinLength(6, ErrorMessage = "password 长度必须大于6")] string password)
+            [FromForm, Required, MinLength(6)] string username,
+            [FromForm, Required, MinLength(6)] string password)
         {
             var hasUser = (from item in dbContext.Users
                            where item.UserName == username
@@ -71,7 +71,7 @@ namespace MyRoomServer.Controllers
         /// <returns></returns>
         [AllowAnonymous]
         [HttpPost("login")]
-        [Produces(typeof(ApiRes))]
+        [ProducesErrorResponseType(typeof(ApiRes))]
         public IActionResult Login([FromForm, Required, MinLength(6)] string username,
                                    [FromForm, Required, MinLength(6)] string password)
         {
@@ -116,9 +116,7 @@ namespace MyRoomServer.Controllers
         [Authorize(Policy = IdentityPolicyNames.RefreshTokenOnly)]
         public async Task<IActionResult> RefreshTokenAsync()
         {
-            var userId = User.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Single().Value 
-                ?? throw new Exception("userId 不可能为 null");
-
+            var userId = this.GetUserId();
             var user = await dbContext.Users.FindAsync(Guid.Parse(userId));
             if (user == null)
             {
@@ -129,8 +127,8 @@ namespace MyRoomServer.Controllers
 
             // 计算RefreshToken剩余有效期
             var expireTime = User.Claims.Where(c => c.Type == JwtRegisteredClaimNames.Exp)
-                                         .Select(c => Convert.ToInt32(c.Value).ToDateTime())
-                                         .Single();
+                                        .Select(c => Convert.ToInt32(c.Value).ToDateTime())
+                                        .Single();
 
             var remainMinutes = (int)(expireTime - DateTime.Now).TotalMinutes;
 
