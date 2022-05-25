@@ -62,11 +62,12 @@ AccessToken有效期为60分钟，RefreshToken有效期为432000分钟，当Refr
 
 #### 登录流程
 
-![登录流程](docs/images/%E6%B5%81%E7%A8%8B.drawio.svg)
+![登录流程](docs/images/登录流程.drawio.svg)
 
 ### SignalR
 
-待写...
+#### 方法使用流程
+![方法使用流程](docs/images/项目管理员与用户交互.drawio.svg)
 
 ## 代码提交
 
