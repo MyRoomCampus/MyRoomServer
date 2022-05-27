@@ -37,7 +37,7 @@ let exp = payload['exp']                  // 获取过期时间
 
 #### 用户注册
 
-目前未对用户注册做绑定要求，注册接口要求用户名及密码均为6位长度及以上，用户名不重复则注册成功。返回码说明详见Apifox。
+目前未对用户注册做绑定要求，注册接口要求用户名及密码长度均为6位及以上，用户名不重复则注册成功。返回码说明详见Apifox。
 
 #### 用户登录
 
@@ -67,6 +67,13 @@ AccessToken有效期为60分钟，RefreshToken有效期为432000分钟，当Refr
 ### SignalR
 
 #### 方法使用流程
+
+- 绿线为预期状态
+- 红线为异常状态
+- 黄块为用户事件
+- 紫块为调用方法
+- 绿块为数据资源
+
 ![方法使用流程](docs/images/项目管理员与用户交互.drawio.svg)
 
 ## 代码提交
@@ -79,7 +86,7 @@ Commit message 使用 [Angular 规范](https://www.ruanyifeng.com/blog/2016/01/c
 
 ### 自动部署
 
-当 master 分支发生 push 动作是进行部署。
+当 master 分支发生 push 动作时触发 GitHub Action 进行部署。
 
 ### 手动部署
 
