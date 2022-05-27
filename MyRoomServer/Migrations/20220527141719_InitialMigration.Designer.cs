@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyRoomServer.Entities;
 
@@ -10,9 +11,10 @@ using MyRoomServer.Entities;
 namespace MyRoomServer.Migrations
 {
     [DbContext(typeof(MyRoomDbContext))]
-    partial class MyRoomDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220527141719_InitialMigration")]
+    partial class InitialMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
