@@ -21,11 +21,12 @@ namespace MyRoomServer.Hubs
         /// </summary>
         private static class ReceiveMethods
         {
-            public const string NewMessage = nameof(NewMessage);
-            public const string NewIceCandidate = nameof(NewIceCandidate);
-            public const string NewOffer = nameof(NewOffer);
-            public const string NewAnswer = nameof(NewAnswer);
-            public const string UserVisitProject = nameof(UserVisitProject);
+            public const string ReceiveMessage = nameof(ReceiveMessage);
+            public const string ReceiceIceCandidate = nameof(ReceiceIceCandidate);
+            public const string ReceiveOffer = nameof(ReceiveOffer);
+            public const string ReveiveAnswer = nameof(ReveiveAnswer);
+            public const string ReceiveVisit = nameof(ReceiveVisit);
+            public const string ReceiveVideoReject = nameof(ReceiveVideoReject);
         }
 
         public ProjectHub(IMemoryCache cache, MyRoomDbContext dbContext)
@@ -34,25 +35,25 @@ namespace MyRoomServer.Hubs
             this.dbContext = dbContext;
         }
 
-        public async Task SendMessage(string message)
+        public async Task SendMessage(string message, string connectId)
         {
             var userName = this.GetUserName();
-            await Clients.All.SendAsync(ReceiveMethods.NewMessage, userName, message);
+            await Clients.All.SendAsync(ReceiveMethods.ReceiveMessage, userName, message);
         }
 
         public async Task SendIceCandidate(string user, string candidate)
         {
-            await Clients.All.SendAsync(ReceiveMethods.NewIceCandidate, user, candidate);
+            await Clients.All.SendAsync(ReceiveMethods.ReceiceIceCandidate, user, candidate);
         }
 
         public async Task SendOffer(string user, string offer)
         {
-            await Clients.All.SendAsync(ReceiveMethods.NewOffer, offer);
+            await Clients.All.SendAsync(ReceiveMethods.ReceiveOffer, offer);
         }
 
         public async Task SendAnswer(string user, string answer)
         {
-            await Clients.All.SendAsync(ReceiveMethods.NewAnswer, answer);
+            await Clients.All.SendAsync(ReceiveMethods.ReveiveAnswer, answer);
         }
 
         /// <summary>
@@ -60,7 +61,7 @@ namespace MyRoomServer.Hubs
         /// </summary>
         /// <param name="projectId"></param>
         /// <returns></returns>
-        public async Task VisitProject(string projectId)
+        public async Task SendVisit(string projectId)
         {
             // todo 可以考虑在这里给用户发点项目的消息
             await Groups.AddToGroupAsync(Context.ConnectionId, projectId);
@@ -68,7 +69,7 @@ namespace MyRoomServer.Hubs
             if (ok)
             {
                 // todo 定义需要发送的数据结构
-                await Clients.Client(managerConnectId).SendAsync(ReceiveMethods.UserVisitProject, Context.ConnectionId);
+                await Clients.Client(managerConnectId).SendAsync(ReceiveMethods.ReceiveVisit, Context.ConnectionId);
             }
         }
 
@@ -77,7 +78,7 @@ namespace MyRoomServer.Hubs
         /// </summary>
         /// <param name="projectId"></param>
         /// <returns></returns>
-        public async Task ObserveProject(long projectId)
+        public async Task SendObserve(long projectId)
         {
             var project = await dbContext.Projects.FindAsync(projectId);
             // todo 这里考虑需不需要给用户点反馈
@@ -86,6 +87,12 @@ namespace MyRoomServer.Hubs
                 return;
             }
             cache.Set(projectId, Context.ConnectionId);
+        }
+
+        public async Task SendVideoReject(string uid)
+        {
+            await Clients.Client(uid).SendAsync(ReceiveMethods.ReceiveVideoReject, uid);
+            throw new NotImplementedException();
         }
 
         public override Task OnDisconnectedAsync(Exception? exception)
