@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MyRoomServer.Entities;
+using MyRoomServer.Entities.Contexts;
 using MyRoomServer.Models;
 
 namespace MyRoomServer.Controllers

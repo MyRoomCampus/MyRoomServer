@@ -4,14 +4,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using MyRoomServer.Entities;
+using MyRoomServer.Entities.Contexts;
 
 #nullable disable
 
 namespace MyRoomServer.Migrations
 {
     [DbContext(typeof(MyRoomDbContext))]
-    [Migration("20220527141719_InitialMigration")]
+    [Migration("20220528153814_InitialMigration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -385,6 +385,9 @@ namespace MyRoomServer.Migrations
                         .HasColumnType("varchar(64)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserName")
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });

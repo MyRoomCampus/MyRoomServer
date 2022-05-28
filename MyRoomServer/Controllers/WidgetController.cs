@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyRoomServer.Entities;
+using MyRoomServer.Entities.Contexts;
 using MyRoomServer.Extentions;
 using MyRoomServer.Models;
 

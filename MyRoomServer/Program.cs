@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using MyRoomServer.Entities;
+using MyRoomServer.Entities.Contexts;
 using MyRoomServer.Extentions;
 using MyRoomServer.Hubs;
 using MyRoomServer.Models;

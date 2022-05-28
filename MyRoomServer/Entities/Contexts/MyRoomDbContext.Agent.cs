@@ -1,27 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace MyRoomServer.Entities
+namespace MyRoomServer.Entities.Contexts
 {
-    public class MyRoomDbContext : DbContext
+    public partial class MyRoomDbContext : DbContext
     {
-        public MyRoomDbContext(DbContextOptions<MyRoomDbContext> options)
-            : base(options)
+        private static void BuildAgentHouseModel(ModelBuilder modelBuilder)
         {
-        }
-
-        public DbSet<User> Users { get; set; } = null!;
-        public DbSet<UserClaim> UsersClaims { get; set; } = null!;
-        public DbSet<Project> Projects { get; set; } = null!;
-        public DbSet<Widget> Widgets { get; set; } = null!;
-        public DbSet<AgentHouse> AgHouses { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder.UseCollation("utf8mb4_general_ci")
-                .HasCharSet("utf8mb4");
-
             modelBuilder.Entity<AgentHouse>(entity =>
             {
                 entity.ToTable("ag_house");

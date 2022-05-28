@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyRoomServer.Entities;
+using MyRoomServer.Entities.Contexts;
 using MyRoomServer.Extentions;
 using MyRoomServer.Models;
 using MyRoomServer.Services;
@@ -150,6 +151,29 @@ namespace MyRoomServer.Controllers
                     AccessToken = accessToken
                 });
             }
+        }
+
+        [HttpPut("validate")]
+        [Authorize(Policy = IdentityPolicyNames.CommonUser)]
+        public async Task<IActionResult> UpdateUserValidateInfoAsync(string? username, string? password)
+        {
+            var uid = this.GetUserId();
+            var user = await dbContext.Users.FindAsync(Guid.Parse(uid));
+            if (user == null)
+            {
+                return BadRequest(new ApiRes("用户不存在"));
+            }
+            if (username != null)
+            {
+                user.UserName = username;
+            }
+            if (password != null)
+            {
+                user.Password = password.Sha256(salt);
+            }
+            dbContext.Users.Update(user);
+            var res = await dbContext.SaveChangesAsync();
+            return Ok(res);
         }
     }
 }

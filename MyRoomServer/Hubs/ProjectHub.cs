@@ -23,7 +23,7 @@ namespace MyRoomServer.Hubs
             // TODO 线程不安全
             if (TryGetProjectInfo(projectId, out var info))
             {
-                if(info.AdminConnectionId != null)
+                if (info.AdminConnectionId != null)
                 {
                     // TODO 这里需要仔细考虑应该给 admin 哪些信息
                     await Clients.Client(info.AdminConnectionId).SendAsync(ReceiveMethods.ReceiveVisit, Context.ConnectionId);
