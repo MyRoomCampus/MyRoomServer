@@ -153,7 +153,7 @@ namespace MyRoomServer.Controllers
             }
         }
 
-        [HttpPut("validate")]
+        [HttpPut("validate-info")]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
         public async Task<IActionResult> UpdateUserValidateInfoAsync(string? username, string? password)
         {
@@ -182,6 +182,28 @@ namespace MyRoomServer.Controllers
                 return BadRequest(new ApiRes("该用户名已被使用"));
             }
             return Ok(new ApiRes("更改成功"));
+        }
+
+        /// <summary>
+        /// 检查此用户名是否已被使用
+        /// </summary>
+        /// <param name="username">用户名</param>
+        /// <returns></returns>
+        [HttpGet("check-username/{username}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> UpdateUserValidateInfoAsync(string username)
+        {
+            var ok = await (from item in dbContext.Users
+                            where item.UserName == username
+                            select item).AsNoTracking().AnyAsync();
+            if (!ok)
+            {
+                return Ok(new ApiRes("此用户名可用"));
+            }
+            else
+            {
+                return BadRequest(new ApiRes("此用户名不可用"));
+            }
         }
     }
 }
