@@ -1,38 +1,80 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using MyRoomServer.Entities;
 using MyRoomServer.Extentions;
 using MyRoomServer.Models;
 
 namespace MyRoomServer.Hubs
 {
     [Authorize(Policy = IdentityPolicyNames.CommonUser)]
-    public class ProjectHub : Hub
+    public partial class ProjectHub : Hub
     {
-        private readonly IMemoryCache cache;
-        private readonly MyRoomDbContext dbContext;
-
         /// <summary>
-        /// 客户端用于接收消息的方法
+        /// 需要重复访问来确保缓存不会失效
         /// </summary>
-        private static class ReceiveMethods
+        /// <param name="projectId"></param>
+        /// <returns></returns>
+        public async Task SendVisit(long projectId)
         {
-            public const string ReceiveMessage = nameof(ReceiveMessage);
-            public const string ReceiceIceCandidate = nameof(ReceiceIceCandidate);
-            public const string ReceiveOffer = nameof(ReceiveOffer);
-            public const string ReveiveAnswer = nameof(ReveiveAnswer);
-            public const string ReceiveVisit = nameof(ReceiveVisit);
-            public const string ReceiveVideoReject = nameof(ReceiveVideoReject);
+            SetConnectionInfo(
+                Context.ConnectionId,
+                new ConnectionInfo(ConnectionType.User, projectId));
+
+            // TODO 线程不安全
+            if (TryGetProjectInfo(projectId, out var info))
+            {
+                if(info.AdminConnectionId != null)
+                {
+                    // TODO 这里需要仔细考虑应该给 admin 哪些信息
+                    await Clients.Client(info.AdminConnectionId).SendAsync(ReceiveMethods.ReceiveVisit, Context.ConnectionId);
+                }
+                info.ClientConnectionIds.Add(Context.ConnectionId);
+                SetProjectInfo(projectId, info);
+            }
+            else
+            {
+                SetProjectInfo(projectId, new ProjectInfo(null, new HashSet<string> { Context.ConnectionId }));
+            }
         }
 
-        public ProjectHub(IMemoryCache cache, MyRoomDbContext dbContext)
+        /// <summary>
+        /// 项目管理者访问以获取该项目当前的访客
+        /// </summary>
+        /// <param name="projectId"></param>
+        /// <returns></returns>
+        public async Task SendObserve(long projectId)
         {
-            this.cache = cache;
-            this.dbContext = dbContext;
+            var identifier = Context.UserIdentifier!;
+            var hasProject = (from item in dbContext.Projects
+                              where item.Id == projectId
+                              where item.UserId == Guid.Parse(identifier)
+                              select item).Any();
+
+            if (!hasProject)
+            {
+                // TODO 这里需要给用户通知吗？
+                return;
+            }
+
+            SetConnectionInfo(
+                Context.ConnectionId,
+                new ConnectionInfo(ConnectionType.Admin, projectId));
+
+            // TODO 线程不安全
+            if (TryGetProjectInfo(projectId, out var info))
+            {
+                if (info.AdminConnectionId != null)
+                {
+                    // TODO 这里需要仔细考虑应该给 admin 哪些信息
+                    await Clients.Client(info.AdminConnectionId).SendAsync(ReceiveMethods.ReceiveVisit, Context.ConnectionId);
+                }
+                info.ClientConnectionIds.Add(Context.ConnectionId);
+                SetProjectInfo(projectId, info);
+            }
+            else
+            {
+                SetProjectInfo(projectId, new ProjectInfo(null, new HashSet<string> { Context.ConnectionId }));
+            }
         }
 
         public async Task SendMessage(string message, string connectId)
@@ -41,8 +83,39 @@ namespace MyRoomServer.Hubs
             await Clients.All.SendAsync(ReceiveMethods.ReceiveMessage, userName, message);
         }
 
+        /// <summary>
+        /// 协商是否进行此次通话
+        /// </summary>
+        /// <param name="user">客户的用户名</param>
+        /// <param name="offerKey"></param>
+        /// <returns></returns>
+        public async Task SendPreOffer(string user, string offerKey)
+        {
+            // todo 从 connectionId 获取 projectId
+            // todo 从 project 的客户中找出 user 对应的connectionId
+            // todo 发送消息
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 客户对是否进行此次通话进行应答
+        /// </summary>
+        /// <param name="offerKey"></param>
+        /// <param name="agree">是否同意进行通话</param>
+        /// <returns></returns>
+        public async Task SendPreAnswer(string offerKey, bool agree)
+        {
+            // 找出 connectionId 对应的 project
+            // 从 project 找出对应的 经纪人 connectionId
+            throw new NotImplementedException();
+        }
+
         public async Task SendIceCandidate(string user, string candidate)
         {
+            // todo 从 connectionId 获取 projectId
+            // todo 从 project 的客户中找出 user 对应的connectionId
+
+            // 
             await Clients.All.SendAsync(ReceiveMethods.ReceiceIceCandidate, user, candidate);
         }
 
@@ -54,45 +127,6 @@ namespace MyRoomServer.Hubs
         public async Task SendAnswer(string user, string answer)
         {
             await Clients.All.SendAsync(ReceiveMethods.ReveiveAnswer, answer);
-        }
-
-        /// <summary>
-        /// 需要重复访问来确保缓存不会失效
-        /// </summary>
-        /// <param name="projectId"></param>
-        /// <returns></returns>
-        public async Task SendVisit(string projectId)
-        {
-            // todo 可以考虑在这里给用户发点项目的消息
-            await Groups.AddToGroupAsync(Context.ConnectionId, projectId);
-            var ok = cache.TryGetValue(projectId, out string managerConnectId);
-            if (ok)
-            {
-                // todo 定义需要发送的数据结构
-                await Clients.Client(managerConnectId).SendAsync(ReceiveMethods.ReceiveVisit, Context.ConnectionId);
-            }
-        }
-
-        /// <summary>
-        /// 项目管理者访问以获取该项目当前的访客
-        /// </summary>
-        /// <param name="projectId"></param>
-        /// <returns></returns>
-        public async Task SendObserve(long projectId)
-        {
-            var project = await dbContext.Projects.FindAsync(projectId);
-            // todo 这里考虑需不需要给用户点反馈
-            if (project == null)
-            {
-                return;
-            }
-            cache.Set(projectId, Context.ConnectionId);
-        }
-
-        public async Task SendVideoReject(string uid)
-        {
-            await Clients.Client(uid).SendAsync(ReceiveMethods.ReceiveVideoReject, uid);
-            throw new NotImplementedException();
         }
 
         public override Task OnDisconnectedAsync(Exception? exception)
