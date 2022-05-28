@@ -1,5 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
-using MyRoomServer.Entities;
+using MyRoomServer.Entities.Contexts;
 using MyRoomServer.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;

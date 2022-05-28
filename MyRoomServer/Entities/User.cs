@@ -1,10 +1,11 @@
-﻿using MyRoomServer.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using MyRoomServer.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MyRoomServer.Entities
 {
-    public class User : IUser
+    public record User : IUser
     {
         /// <summary>
         /// 用户Id

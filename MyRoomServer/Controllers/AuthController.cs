@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyRoomServer.Entities;
+using MyRoomServer.Entities.Contexts;
 using MyRoomServer.Extentions;
 using MyRoomServer.Models;
 using MyRoomServer.Services;
@@ -149,6 +150,59 @@ namespace MyRoomServer.Controllers
                 {
                     AccessToken = accessToken
                 });
+            }
+        }
+
+        [HttpPut("validate-info")]
+        [Authorize(Policy = IdentityPolicyNames.CommonUser)]
+        public async Task<IActionResult> UpdateUserValidateInfoAsync(string? username, string? password)
+        {
+            var uid = this.GetUserId();
+            var user = await dbContext.Users.FindAsync(Guid.Parse(uid));
+            if (user == null)
+            {
+                return BadRequest(new ApiRes("用户不存在"));
+            }
+            if (username != null)
+            {
+                user.UserName = username;
+            }
+            if (password != null)
+            {
+                user.Password = password.Sha256(salt);
+            }
+            dbContext.Users.Update(user);
+
+            try
+            {
+                await dbContext.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return BadRequest(new ApiRes("该用户名已被使用"));
+            }
+            return Ok(new ApiRes("更改成功"));
+        }
+
+        /// <summary>
+        /// 检查此用户名是否已被使用
+        /// </summary>
+        /// <param name="username">用户名</param>
+        /// <returns></returns>
+        [HttpGet("check-username/{username}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> UpdateUserValidateInfoAsync(string username)
+        {
+            var ok = await (from item in dbContext.Users
+                            where item.UserName == username
+                            select item).AsNoTracking().AnyAsync();
+            if (!ok)
+            {
+                return Ok(new ApiRes("此用户名可用"));
+            }
+            else
+            {
+                return BadRequest(new ApiRes("此用户名不可用"));
             }
         }
     }

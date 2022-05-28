@@ -1,4 +1,4 @@
-﻿using MyRoomServer.Entities;
+﻿using MyRoomServer.Entities.Contexts;
 using MyRoomServer.Models;
 using MyRoomServer.Services;
 

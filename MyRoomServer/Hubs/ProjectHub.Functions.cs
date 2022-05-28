@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
-using MyRoomServer.Entities;
+using MyRoomServer.Entities.Contexts;
 
 namespace MyRoomServer.Hubs
 {

@@ -4,6 +4,7 @@ using MyRoomServer.Entities;
 using MyRoomServer.Models;
 using MyRoomServer.Extentions;
 using Microsoft.EntityFrameworkCore;
+using MyRoomServer.Entities.Contexts;
 
 namespace MyRoomServer.Controllers
 {
@@ -37,22 +38,22 @@ namespace MyRoomServer.Controllers
             return Ok(new ApiRes("获取成功", res));
         }
 
-        /// <summary>
-        /// 获取项目信息
-        /// </summary>
-        /// <param name="id">项目Id</param>
-        /// <returns></returns>
-        [HttpGet("{id}")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetAsync([FromRoute] int id)
-        {
-            var project = await dbContext.Projects.FindAsync(id);
-            if (project == null)
-            {
-                return NotFound();
-            }
-            return Ok(new ApiRes("获取成功", project.TransferData));
-        }
+        ///// <summary>
+        ///// 获取项目信息
+        ///// </summary>
+        ///// <param name="id">项目Id</param>
+        ///// <returns></returns>
+        //[HttpGet("{id}")]
+        //[AllowAnonymous]
+        //public async Task<IActionResult> GetAsync([FromRoute] int id)
+        //{
+        //    var project = await dbContext.Projects.FindAsync(id);
+        //    if (project == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    return Ok(new ApiRes("获取成功", project.TransferData));
+        //}
 
         [HttpPost]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]

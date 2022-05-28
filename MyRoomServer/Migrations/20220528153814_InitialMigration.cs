@@ -231,6 +231,12 @@ namespace MyRoomServer.Migrations
                 table: "ag_house",
                 columns: new[] { "source_code", "start_version", "last_version" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_UserName",
+                table: "Users",
+                column: "UserName",
+                unique: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

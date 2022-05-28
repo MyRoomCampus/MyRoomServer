@@ -1,4 +1,5 @@
-﻿using MyRoomServer.Entities.Interfaces;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using MyRoomServer.Entities.Interfaces;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -7,7 +8,7 @@ namespace MyRoomServer.Entities
     /// <summary>
     /// 项目信息
     /// </summary>
-    public record Project : IAccessData<Project>
+    public class Project : IAccessData<Project>
     {
         /// <summary>
         /// 项目Id
@@ -29,6 +30,7 @@ namespace MyRoomServer.Entities
         /// <summary>
         /// 所属用户
         /// </summary>
+        [BindNever]
         [ForeignKey("UserId")]
         public User User { get; } = null!;
 
@@ -41,6 +43,7 @@ namespace MyRoomServer.Entities
         /// <summary>
         /// 获取传输对象
         /// </summary>
+        [BindNever]
         public object TransferData => new
         {
             Id,
