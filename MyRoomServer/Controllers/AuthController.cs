@@ -172,8 +172,16 @@ namespace MyRoomServer.Controllers
                 user.Password = password.Sha256(salt);
             }
             dbContext.Users.Update(user);
-            var res = await dbContext.SaveChangesAsync();
-            return Ok(res);
+
+            try
+            {
+                await dbContext.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return BadRequest(new ApiRes("该用户名已被使用"));
+            }
+            return Ok(new ApiRes("更改成功"));
         }
     }
 }
