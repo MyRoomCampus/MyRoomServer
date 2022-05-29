@@ -10,7 +10,7 @@ namespace MyRoomServer.Controllers
 {
     [Route("project")]
     [ApiController]
-    public class ProjectController : ControllerBase
+    public partial class ProjectController : ControllerBase
     {
         private readonly MyRoomDbContext dbContext;
 
@@ -35,7 +35,12 @@ namespace MyRoomServer.Controllers
                                          .Take(perpage)
                                          .AsNoTracking()
                                          .ToListAsync();
-            return Ok(new ApiRes("获取成功", res));
+
+            var count = (from item in dbContext.Projects
+                         where item.UserId == Guid.Parse(uid)
+                         select item).CountAsync();
+
+            return Ok(new ApiRes("获取成功", new { res, count }));
         }
 
         ///// <summary>
@@ -57,9 +62,14 @@ namespace MyRoomServer.Controllers
 
         [HttpPost]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
-        public async Task<IActionResult> PostAsync([FromBody] Project project)
+        public async Task<IActionResult> PostAsync([FromBody] ProjectPost projectPost)
         {
-            project.UserId = Guid.Parse(this.GetUserId());
+            var uid = Guid.Parse(this.GetUserId());
+            var project = new Project
+            {
+                Name = projectPost.Name,
+                UserId = uid
+            };
             await dbContext.Projects.AddAsync(project);
             await dbContext.SaveChangesAsync();
             return Ok(new ApiRes("上传成功"));
@@ -69,11 +79,11 @@ namespace MyRoomServer.Controllers
         /// 更新项目信息
         /// </summary>
         /// <param name="id">项目Id</param>
-        /// <param name="newProject">项目信息</param>
+        /// <param name="projectPut">项目信息</param>
         /// <returns></returns>
         [HttpPut("{id}")]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
-        public async Task<IActionResult> PutAsync([FromRoute] long id, [FromBody] Project newProject)
+        public async Task<IActionResult> PutAsync([FromRoute] long id, [FromBody] ProjectPut projectPut)
         {
             var uid = this.GetUserId();
             var project = await dbContext.Projects
@@ -84,8 +94,8 @@ namespace MyRoomServer.Controllers
             {
                 return NotFound(new ApiRes("项目不存在"));
             }
-            // todo record = 需要测试是否健壮
-            project = newProject;
+            project.Name = projectPut.Name;
+
             await dbContext.SaveChangesAsync();
             return Ok(new ApiRes("更新成功"));
         }
@@ -114,7 +124,7 @@ namespace MyRoomServer.Controllers
             }
             dbContext.Projects.Remove(project);
             await dbContext.SaveChangesAsync();
-            return Ok(new ApiRes("删除成功", project.TransferData));
+            return Ok(new ApiRes("删除成功"));
         }
     }
 }

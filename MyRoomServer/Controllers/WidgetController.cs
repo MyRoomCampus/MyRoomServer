@@ -32,7 +32,7 @@ namespace MyRoomServer.Controllers
             {
                 return NotFound();
             }
-            return Ok(new ApiRes("获取成功", widget.TransferData));
+            return Ok(new ApiRes("获取成功", widget));
         }
 
         /// <summary>

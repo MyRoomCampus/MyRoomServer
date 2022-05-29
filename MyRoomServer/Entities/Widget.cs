@@ -1,5 +1,4 @@
-﻿using MyRoomServer.Entities.Interfaces;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MyRoomServer.Entities
@@ -7,7 +6,7 @@ namespace MyRoomServer.Entities
     /// <summary>
     /// 小组件
     /// </summary>
-    public class Widget : IAccessData<Widget>
+    public class Widget
     {
         /// <summary>
         /// 组件Id
@@ -51,26 +50,5 @@ namespace MyRoomServer.Entities
         /// 扩展信息
         /// </summary>
         public string Data { get; set; } = null!;
-
-        /// <inheritdoc/>
-        public object TransferData => new
-        {
-            Id,
-            Abscissa,
-            Ordinate,
-            Length,
-            Width,
-            Data
-        };
-
-        /// <inheritdoc/>
-        public void Update(Widget obj)
-        {
-            Abscissa = obj.Abscissa;
-            Ordinate = obj.Ordinate;
-            Length = obj.Length;
-            Width = obj.Width;
-            Data = obj.Data;
-        }
     }
 }
