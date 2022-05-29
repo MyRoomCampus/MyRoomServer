@@ -10,7 +10,7 @@ namespace MyRoomServer.Controllers
 {
     [Route("widget")]
     [ApiController]
-    public class WidgetController : ControllerBase
+    public partial class WidgetController : ControllerBase
     {
         private readonly MyRoomDbContext dbContext;
 
