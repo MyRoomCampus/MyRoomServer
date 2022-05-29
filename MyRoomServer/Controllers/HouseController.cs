@@ -37,6 +37,20 @@ namespace MyRoomServer.Controllers
         }
 
         /// <summary>
+        /// 获取房产信息的数量
+        /// </summary>
+        /// <returns></returns>
+        /// <response code="200">房产信息的数量</response>
+        [HttpGet("count")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Get()
+        {
+            var cnt = await (from item in dbContext.AgHouses
+                             select item).CountAsync();
+            return Ok(new ApiRes("获取成功", cnt));
+        }
+
+        /// <summary>
         /// 根据Id获取房产信息
         /// </summary>
         /// <param name="id">房产Id</param>
