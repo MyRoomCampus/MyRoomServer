@@ -60,6 +60,12 @@ namespace MyRoomServer.Controllers
         //    return Ok(new ApiRes("获取成功", project.TransferData));
         //}
 
+        /// <summary>
+        /// 创建一个项目信息
+        /// </summary>
+        /// <param name="projectPost">项目信息</param>
+        /// <returns></returns>
+        /// <response code="200">创建成功</response>
         [HttpPost]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
         public async Task<IActionResult> PostAsync([FromBody] ProjectPost projectPost)
