@@ -18,7 +18,7 @@ namespace MyRoomServer.Controllers
         }
 
         /// <summary>
-        /// 获取房产信息
+        /// 获取一批房产信息
         /// </summary>
         /// <param name="page">第几页</param>
         /// <param name="perpage">每页多少条数据</param>
@@ -32,6 +32,27 @@ namespace MyRoomServer.Controllers
                                          .Take(perpage)
                                          .AsNoTracking()
                                          .ToListAsync();
+
+            return Ok(new ApiRes("获取成功", res));
+        }
+
+        /// <summary>
+        /// 根据Id获取房产信息
+        /// </summary>
+        /// <param name="id">房产Id</param>
+        /// <returns></returns>
+        /// <response code="200">获取成功</response>
+        /// <response code="404">不存在此房产Id信息</response>
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetById([FromRoute] ulong id)
+        {
+            var res = await dbContext.AgHouses.FindAsync(id);
+
+            if(res == null)
+            {
+                return NotFound();
+            }
 
             return Ok(new ApiRes("获取成功", res));
         }
