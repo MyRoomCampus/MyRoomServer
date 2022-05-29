@@ -153,6 +153,14 @@ namespace MyRoomServer.Controllers
             }
         }
 
+        /// <summary>
+        /// 更新用户验证信息
+        /// </summary>
+        /// <param name="username">用户名（非必填）</param>
+        /// <param name="password">密码（非必填）</param>
+        /// <returns></returns>
+        /// <response code="200">成功</response>
+        /// <response code="400">请求更改用户验证信息的用户不存在或用户名已被占用</response>
         [HttpPut("validate-info")]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
         public async Task<IActionResult> UpdateUserValidateInfoAsync(
@@ -191,6 +199,8 @@ namespace MyRoomServer.Controllers
         /// </summary>
         /// <param name="username">用户名</param>
         /// <returns></returns>
+        /// <response code="200">用户名可用</response>
+        /// <response code="400">用户名不可用</response>
         [HttpGet("check-username/{username}")]
         [AllowAnonymous]
         public async Task<IActionResult> UpdateUserValidateInfoAsync(
