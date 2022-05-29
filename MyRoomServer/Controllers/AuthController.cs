@@ -30,8 +30,8 @@ namespace MyRoomServer.Controllers
         /// <summary>
         /// 用户注册
         /// </summary>
-        /// <param name="username">用户名</param>
-        /// <param name="password">密码</param>
+        /// <param name="username">用户名(长度为6-20)</param>
+        /// <param name="password">密码(长度为6-20)</param>
         /// <response code="200">注册成功</response>
         /// <response code="400">该用户名已被注册</response>
         /// <returns></returns>
@@ -40,8 +40,8 @@ namespace MyRoomServer.Controllers
         [ProducesResponseType(typeof(ApiRes), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiRes), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> RegisterAsync(
-            [FromForm, Required, MinLength(6)] string username,
-            [FromForm, Required, MinLength(6)] string password)
+            [FromForm, Required, MinLength(6), MaxLength(20)] string username,
+            [FromForm, Required, MinLength(6), MaxLength(20)] string password)
         {
             var hasUser = (from item in dbContext.Users
                            where item.UserName == username
@@ -65,16 +65,16 @@ namespace MyRoomServer.Controllers
         /// <summary>
         /// 用户登录
         /// </summary>
-        /// <param name="username">用户名</param>
-        /// <param name="password">密码</param>
+        /// <param name="username">用户名(长度为6-20)</param>
+        /// <param name="password">密码(长度为6-20)</param>
         /// <response code="200">登录成功</response>
         /// <response code="400">密码错误或用户不存在</response>
         /// <returns></returns>
         [AllowAnonymous]
         [HttpPost("login")]
         [ProducesErrorResponseType(typeof(ApiRes))]
-        public IActionResult Login([FromForm, Required, MinLength(6)] string username,
-                                   [FromForm, Required, MinLength(6)] string password)
+        public IActionResult Login([FromForm, Required, MinLength(6), MaxLength(20)] string username,
+                                   [FromForm, Required, MinLength(6), MaxLength(20)] string password)
         {
             var user = (from item in dbContext.Users
                         where item.UserName == username
@@ -155,7 +155,9 @@ namespace MyRoomServer.Controllers
 
         [HttpPut("validate-info")]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
-        public async Task<IActionResult> UpdateUserValidateInfoAsync(string? username, string? password)
+        public async Task<IActionResult> UpdateUserValidateInfoAsync(
+            [MinLength(6), MaxLength(20)] string? username,
+            [MinLength(6), MaxLength(20)] string? password)
         {
             var uid = this.GetUserId();
             var user = await dbContext.Users.FindAsync(Guid.Parse(uid));
@@ -191,7 +193,8 @@ namespace MyRoomServer.Controllers
         /// <returns></returns>
         [HttpGet("check-username/{username}")]
         [AllowAnonymous]
-        public async Task<IActionResult> UpdateUserValidateInfoAsync(string username)
+        public async Task<IActionResult> UpdateUserValidateInfoAsync(
+            [MinLength(6), MaxLength(20)] string username)
         {
             var ok = await (from item in dbContext.Users
                             where item.UserName == username

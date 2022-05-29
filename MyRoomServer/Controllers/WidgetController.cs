@@ -10,7 +10,7 @@ namespace MyRoomServer.Controllers
 {
     [Route("widget")]
     [ApiController]
-    public class WidgetController : ControllerBase
+    public partial class WidgetController : ControllerBase
     {
         private readonly MyRoomDbContext dbContext;
 
@@ -32,7 +32,7 @@ namespace MyRoomServer.Controllers
             {
                 return NotFound();
             }
-            return Ok(new ApiRes("获取成功", widget.TransferData));
+            return Ok(new ApiRes("获取成功", widget));
         }
 
         /// <summary>
