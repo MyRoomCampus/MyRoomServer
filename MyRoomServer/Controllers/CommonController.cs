@@ -19,6 +19,7 @@ namespace MyRoomServer.Controllers
         /// 项目存活测试
         /// </summary>
         /// <returns></returns>
+        /// <response code="200">pong</response>
         [AllowAnonymous]
         [HttpGet]
         public IActionResult Ping()
