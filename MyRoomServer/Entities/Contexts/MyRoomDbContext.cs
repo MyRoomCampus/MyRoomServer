@@ -13,7 +13,8 @@ namespace MyRoomServer.Entities.Contexts
         public DbSet<UserClaim> UsersClaims { get; set; } = null!;
         public DbSet<Project> Projects { get; set; } = null!;
         public DbSet<Widget> Widgets { get; set; } = null!;
-        public DbSet<AgentHouse> AgHouses { get; set; }
+        public DbSet<AgentHouse> AgentHouses { get; set; } = null!;
+        public DbSet<Media> Medias { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

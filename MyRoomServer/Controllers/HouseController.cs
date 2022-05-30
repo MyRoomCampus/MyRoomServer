@@ -27,7 +27,7 @@ namespace MyRoomServer.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Get([FromQuery] int page, [FromQuery] int perpage)
         {
-            var res = await (from item in dbContext.AgHouses
+            var res = await (from item in dbContext.AgentHouses
                              select item).Skip((page - 1) * perpage)
                                          .Take(perpage)
                                          .AsNoTracking()
@@ -45,7 +45,7 @@ namespace MyRoomServer.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Get()
         {
-            var cnt = await (from item in dbContext.AgHouses
+            var cnt = await (from item in dbContext.AgentHouses
                              select item).CountAsync();
             return Ok(new ApiRes("获取成功", cnt));
         }
@@ -61,7 +61,7 @@ namespace MyRoomServer.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetById([FromRoute] ulong id)
         {
-            var res = await dbContext.AgHouses.FindAsync(id);
+            var res = await dbContext.AgentHouses.FindAsync(id);
 
             if(res == null)
             {

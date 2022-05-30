@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyRoomServer.Entities.Contexts;
 
@@ -10,9 +11,10 @@ using MyRoomServer.Entities.Contexts;
 namespace MyRoomServer.Migrations
 {
     [DbContext(typeof(MyRoomDbContext))]
-    partial class MyRoomDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220530031205_MediaStorage")]
+    partial class MediaStorage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
