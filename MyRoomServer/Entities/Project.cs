@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace MyRoomServer.Entities
 {
@@ -13,22 +14,26 @@ namespace MyRoomServer.Entities
         /// </summary>
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [JsonPropertyName("projectId")]
         public long Id { get; init; }
 
         /// <summary>
         /// 项目名称
         /// </summary>
+        [JsonPropertyName("projectName")]
         public string Name { get; set; } = null!;
 
         /// <summary>
         /// 用户Id
         /// </summary>
+        [JsonPropertyName("author")]
         public Guid UserId { get; set; }
 
         /// <summary>
         /// 所属用户
         /// </summary>
         [ForeignKey("UserId")]
+        [JsonIgnore]
         public User User { get; } = null!;
 
         /// <summary>
@@ -36,5 +41,10 @@ namespace MyRoomServer.Entities
         /// </summary>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime CreatedAt { get; init; }
+
+        /// <summary>
+        /// 组件数据
+        /// </summary>
+        public List<Widget> Data { get; set; } = null!;
     }
 }

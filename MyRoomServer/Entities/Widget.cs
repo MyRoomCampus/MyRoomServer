@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace MyRoomServer.Entities
 {
@@ -13,42 +14,49 @@ namespace MyRoomServer.Entities
         /// </summary>
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [JsonIgnore]
         public long Id { get; init; }
 
         /// <summary>
         /// 项目Id
         /// </summary>
+        [JsonIgnore]
         public long ProjectId { get; set; }
 
         /// <summary>
         /// 所属项目
         /// </summary>
         [ForeignKey("ProjectId")]
+        [JsonIgnore]
         public Project Project { get; } = null!;
 
         /// <summary>
-        /// 横坐标
+        /// 组件类型
         /// </summary>
-        public long Abscissa { get; set; }
+        [MaxLength(64)]
+        public string Type { get; set; } = null!;
 
         /// <summary>
-        /// 纵坐标
+        /// 组件名称
         /// </summary>
-        public long Ordinate { get; set; }
+        [MaxLength(64)]
+        public string Name { get; set; } = null!;
+
 
         /// <summary>
-        /// 长度
+        /// 项目内组件 ID
         /// </summary>
-        public long Length { get; set; }
+        public ulong CurrentId { get; set; }
 
         /// <summary>
-        /// 宽度
+        /// 额外数据
         /// </summary>
-        public long Width { get; set; }
-
-        /// <summary>
-        /// 扩展信息
-        /// </summary>
+        [MaxLength(256)]
         public string Data { get; set; } = null!;
+
+        /// <summary>
+        /// 组件样式
+        /// </summary>
+        public string Style { get; set; } = null!;
     }
 }

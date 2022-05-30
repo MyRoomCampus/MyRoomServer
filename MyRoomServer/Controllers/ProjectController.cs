@@ -68,7 +68,7 @@ namespace MyRoomServer.Controllers
         /// <response code="200">创建成功</response>
         [HttpPost]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
-        public async Task<IActionResult> PostAsync([FromBody] ProjectPost projectPost)
+        public async Task<IActionResult> PostAsync([FromBody] Project projectPost)
         {
             var uid = Guid.Parse(this.GetUserId());
             var project = new Project
@@ -78,7 +78,7 @@ namespace MyRoomServer.Controllers
             };
             await dbContext.Projects.AddAsync(project);
             await dbContext.SaveChangesAsync();
-            return Ok(new ApiRes("上传成功"));
+            return Ok(new ApiRes("创建成功"));
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace MyRoomServer.Controllers
         /// <returns></returns>
         [HttpPut("{id}")]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
-        public async Task<IActionResult> PutAsync([FromRoute] long id, [FromBody] ProjectPut projectPut)
+        public async Task<IActionResult> PutAsync([FromRoute] long id, [FromBody] Project projectPut)
         {
             var uid = this.GetUserId();
             var project = await dbContext.Projects
