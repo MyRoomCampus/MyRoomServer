@@ -97,7 +97,7 @@ AccessToken有效期为60分钟，RefreshToken有效期为432000分钟，当Refr
 
 客户在接收通话后缓存此 offerKey 随后的协商过程只接受含有此 offerKey 的请求，并在每次请求中携带此 offerKey。
 
-服务端在 `SendPreoffer` 时就缓存此 offerKey 并记录通话的两方。以便在后续协商过程中只需要收到 offerKey 即可将数据传递给两发。
+服务端在 `SendPreoffer` 时就缓存此 offerKey 并记录通话的两方。以便在后续协商过程中只需要收到 offerKey 即可将数据传递给两方。
 
 #### 方法使用流程
 
