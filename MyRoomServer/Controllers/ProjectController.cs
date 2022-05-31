@@ -70,21 +70,40 @@ namespace MyRoomServer.Controllers
         /// <summary>
         /// 创建一个项目信息
         /// </summary>
-        /// <param name="projectPost">项目信息</param>
+        /// <param name="projectPost">项目信息(其中项目Id 要求与房产Id 一致且属于同一个用户)</param>
         /// <returns></returns>
         /// <response code="200">创建成功</response>
+        /// <response code="400">此房产信息已创建过项目</response>
+        /// <response code="401">项目Id与用户的房产信息不匹配</response>
         [HttpPost]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
         public async Task<IActionResult> PostAsync([FromBody] Project projectPost)
         {
             var uid = Guid.Parse(this.GetUserId());
+
+            var hasHouse = (from item in dbContext.HouseMapUsers
+             where item.UserId == uid && item.HouseId == projectPost.Id
+             select item).Any();
+
+            if (!hasHouse)
+            {
+                return Unauthorized(new ApiRes("项目Id与用户房产信息不匹配"));
+            }
+
             var project = new Project
             {
                 Name = projectPost.Name,
                 UserId = uid
             };
-            await dbContext.Projects.AddAsync(project);
-            await dbContext.SaveChangesAsync();
+            try
+            {
+                await dbContext.Projects.AddAsync(project);
+                await dbContext.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return BadRequest(new ApiRes("此房产信息已创建项目"));
+            }
             return Ok(new ApiRes("创建成功"));
         }
 
@@ -96,7 +115,7 @@ namespace MyRoomServer.Controllers
         /// <returns></returns>
         [HttpPut("{id}")]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
-        public async Task<IActionResult> PutAsync([FromRoute] long id, [FromBody] Project projectPut)
+        public async Task<IActionResult> PutAsync([FromRoute] ulong id, [FromBody] Project projectPut)
         {
             var uid = this.GetUserId();
             var project = await dbContext.Projects

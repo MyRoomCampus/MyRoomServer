@@ -39,7 +39,7 @@ namespace MyRoomServer.Hubs
             Admin
         }
 
-        private record ConnectionInfo(ConnectionType Type, long ProjectId);
+        private record ConnectionInfo(ConnectionType Type, ulong ProjectId);
 
         private record ProjectInfo(string? AdminConnectionId, HashSet<string> ClientConnectionIds);
 
@@ -56,7 +56,7 @@ namespace MyRoomServer.Hubs
                 return $"{KeyConnectionInfo}{connectionId}";
             }
 
-            public static string GetProjectInfo(long projectId)
+            public static string GetProjectInfo(ulong projectId)
             {
                 return $"{KeyProjectInfo}{projectId}";
             }
@@ -72,12 +72,12 @@ namespace MyRoomServer.Hubs
             return cache.TryGetValue(CacheKeys.GetConnectionInfo(connectionId), out value);
         }
 
-        private void SetProjectInfo(long projectId, ProjectInfo info)
+        private void SetProjectInfo(ulong projectId, ProjectInfo info)
         {
             cache.Set(CacheKeys.GetProjectInfo(projectId), info, new TimeSpan(0, 10, 0));
         }
 
-        private bool TryGetProjectInfo(long projectId, out ProjectInfo info)
+        private bool TryGetProjectInfo(ulong projectId, out ProjectInfo info)
         {
             return cache.TryGetValue(CacheKeys.GetProjectInfo(projectId), out info);
         }

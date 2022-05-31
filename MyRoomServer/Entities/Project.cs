@@ -15,7 +15,11 @@ namespace MyRoomServer.Entities
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [JsonPropertyName("projectId")]
-        public long Id { get; init; }
+        public ulong Id { get; init; }
+
+        [JsonIgnore]
+        [ForeignKey(nameof(Id))]
+        public AgentHouse House { get; init; } = null!;
 
         /// <summary>
         /// 项目名称
