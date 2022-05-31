@@ -22,7 +22,7 @@ namespace MyRoomServer.Controllers
         /// </summary>
         /// <param name="page">第几页</param>
         /// <param name="perpage">每页多少条数据</param>
-        /// <param name="query"></param>
+        /// <param name="query">模糊查询（可选参数）</param>
         /// <returns></returns>
         [HttpGet]
         [AllowAnonymous]
@@ -33,9 +33,9 @@ namespace MyRoomServer.Controllers
 
             if (query != null)
             {
-                sqlQuery = sqlQuery.Where(x => EF.Functions.Like(x.ListingName, query)
-                    || EF.Functions.Like(x.CityName, query)
-                    || EF.Functions.Like(x.NeighborhoodName, query));
+                sqlQuery = sqlQuery.Where(x => x.ListingName.Contains(query)
+                    || x.CityName.Contains(query)
+                    || x.NeighborhoodName.Contains(query));
             }
 
             var res = await sqlQuery.Skip((page - 1) * perpage)
