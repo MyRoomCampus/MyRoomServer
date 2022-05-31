@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using MyRoomServer.Entities;
 using MyRoomServer.Entities.Contexts;
 using MyRoomServer.Extentions;
+using MyRoomServer.Extentions.Validations;
 using MyRoomServer.Models;
 using MyRoomServer.Services;
 using System.ComponentModel.DataAnnotations;
@@ -41,7 +42,7 @@ namespace MyRoomServer.Controllers
         [ProducesResponseType(typeof(ApiRes), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> RegisterAsync(
             [FromForm, Required, MinLength(6), MaxLength(20)] string username,
-            [FromForm, Required, MinLength(6), MaxLength(20)] string password)
+            [FromForm, Password] string password)
         {
             var hasUser = (from item in dbContext.Users
                            where item.UserName == username
@@ -154,47 +155,6 @@ namespace MyRoomServer.Controllers
         }
 
         /// <summary>
-        /// 更新用户验证信息
-        /// </summary>
-        /// <param name="username">用户名（非必填）</param>
-        /// <param name="password">密码（非必填）</param>
-        /// <returns></returns>
-        /// <response code="200">成功</response>
-        /// <response code="400">请求更改用户验证信息的用户不存在或用户名已被占用</response>
-        [HttpPut("validate-info")]
-        [Authorize(Policy = IdentityPolicyNames.CommonUser)]
-        public async Task<IActionResult> UpdateUserValidateInfoAsync(
-            [MinLength(6), MaxLength(20)] string? username,
-            [MinLength(6), MaxLength(20)] string? password)
-        {
-            var uid = this.GetUserId();
-            var user = await dbContext.Users.FindAsync(Guid.Parse(uid));
-            if (user == null)
-            {
-                return BadRequest(new ApiRes("用户不存在"));
-            }
-            if (username != null)
-            {
-                user.UserName = username;
-            }
-            if (password != null)
-            {
-                user.Password = password.Sha256(salt);
-            }
-            dbContext.Users.Update(user);
-
-            try
-            {
-                await dbContext.SaveChangesAsync();
-            }
-            catch (Exception)
-            {
-                return BadRequest(new ApiRes("该用户名已被使用"));
-            }
-            return Ok(new ApiRes("更改成功"));
-        }
-
-        /// <summary>
         /// 检查此用户名是否已被使用
         /// </summary>
         /// <param name="username">用户名</param>
@@ -226,7 +186,7 @@ namespace MyRoomServer.Controllers
         /// <response code="200">注销成功</response>
         /// <response code="400">使用了已注销的用户访问此接口</response>
         /// <response code="401">未登录</response>
-        [HttpDelete("cancel")]
+        [HttpPost("cancel")]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
         public async Task<IActionResult> UserCancel()
         {
