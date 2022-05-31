@@ -27,7 +27,7 @@ namespace MyRoomServer.Controllers
         /// <returns></returns>
         [HttpGet("{id}")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetResource([FromRoute]Guid id, [FromHeader(Name = "If-Modified-Since")] DateTime? ifModifiedSince)
+        public async Task<IActionResult> GetResource([FromRoute] Guid id, [FromHeader(Name = "If-Modified-Since")] DateTime? ifModifiedSince)
         {
             var queryImage = async delegate (Guid id)
             {

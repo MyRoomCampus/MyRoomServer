@@ -63,7 +63,7 @@ namespace MyRoomServer.Controllers
         {
             var res = await dbContext.AgentHouses.FindAsync(id);
 
-            if(res == null)
+            if (res == null)
             {
                 return NotFound();
             }

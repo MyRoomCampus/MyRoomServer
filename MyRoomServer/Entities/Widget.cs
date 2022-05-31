@@ -42,7 +42,6 @@ namespace MyRoomServer.Entities
         [MaxLength(64)]
         public string Name { get; set; } = null!;
 
-
         /// <summary>
         /// 项目内组件 ID
         /// </summary>
