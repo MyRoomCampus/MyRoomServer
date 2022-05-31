@@ -22,32 +22,33 @@ namespace MyRoomServer.Controllers
         /// </summary>
         /// <param name="page">第几页</param>
         /// <param name="perpage">每页多少条数据</param>
+        /// <param name="query"></param>
         /// <returns></returns>
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> Get([FromQuery] int page, [FromQuery] int perpage)
+        public async Task<IActionResult> Get([FromQuery] int page, [FromQuery] int perpage, [FromQuery] string? query)
         {
-            var res = await (from item in dbContext.AgentHouses
-                             select item).Skip((page - 1) * perpage)
+            var sqlQuery = (from item in dbContext.AgentHouses
+                         select item);
+
+            if (query != null)
+            {
+                sqlQuery = sqlQuery.Where(x => EF.Functions.Like(x.ListingName, query)
+                    || EF.Functions.Like(x.CityName, query)
+                    || EF.Functions.Like(x.NeighborhoodName, query));
+            }
+
+            var res = await sqlQuery.Skip((page - 1) * perpage)
                                          .Take(perpage)
                                          .AsNoTracking()
                                          .ToListAsync();
+            var cnt = await sqlQuery.CountAsync();
 
-            return Ok(new ApiRes("获取成功", res));
-        }
-
-        /// <summary>
-        /// 获取房产信息的数量
-        /// </summary>
-        /// <returns></returns>
-        /// <response code="200">房产信息的数量</response>
-        [HttpGet("count")]
-        [AllowAnonymous]
-        public async Task<IActionResult> Get()
-        {
-            var cnt = await (from item in dbContext.AgentHouses
-                             select item).CountAsync();
-            return Ok(new ApiRes("获取成功", cnt));
+            return Ok(new
+            {
+                Count = cnt,
+                Data = res,
+            });
         }
 
         /// <summary>
