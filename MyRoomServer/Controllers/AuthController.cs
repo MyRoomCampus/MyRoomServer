@@ -233,7 +233,7 @@ namespace MyRoomServer.Controllers
             var uid = this.GetUserId();
             var user = await dbContext.Users.FindAsync(uid);
 
-            if(user == null)
+            if (user == null)
             {
                 return BadRequest(new ApiRes("用户不存在"));
             }
