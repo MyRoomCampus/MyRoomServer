@@ -173,8 +173,8 @@ namespace MyRoomServer.Controllers
         public async Task<IActionResult> GetFromHouseId([FromRoute] ulong id)
         {
             var project = await (from owns in dbContext.UserOwns
-                           where owns.HouseId == id
-                           select owns.Project).AsNoTracking().SingleOrDefaultAsync();
+                                 where owns.HouseId == id
+                                 select owns.Project).AsNoTracking().SingleOrDefaultAsync();
 
             if (project == null)
             {

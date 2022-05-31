@@ -186,7 +186,7 @@ namespace MyRoomServer.Controllers
         /// <response code="200">注销成功</response>
         /// <response code="400">使用了已注销的用户访问此接口</response>
         /// <response code="401">未登录</response>
-        [HttpDelete("cancel")]
+        [HttpPost("cancel")]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
         public async Task<IActionResult> UserCancel()
         {
