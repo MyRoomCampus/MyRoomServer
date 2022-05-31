@@ -28,19 +28,6 @@ namespace MyRoomServer.Entities
         public string Name { get; set; } = null!;
 
         /// <summary>
-        /// 用户Id
-        /// </summary>
-        [JsonPropertyName("author")]
-        public Guid UserId { get; set; }
-
-        /// <summary>
-        /// 所属用户
-        /// </summary>
-        [ForeignKey("UserId")]
-        [JsonIgnore]
-        public User User { get; } = null!;
-
-        /// <summary>
         /// 创建时间
         /// </summary>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

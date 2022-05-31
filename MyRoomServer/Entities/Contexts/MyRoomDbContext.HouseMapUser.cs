@@ -6,7 +6,7 @@ namespace MyRoomServer.Entities.Contexts
     {
         private static void BuildHouseMapUserModel(ModelBuilder modelbuilder)
         {
-            modelbuilder.Entity<HouseMapUser>(entity =>
+            modelbuilder.Entity<UserOwn>(entity =>
             {
                 entity.HasIndex(e => e.HouseId).IsUnique(true);
             });

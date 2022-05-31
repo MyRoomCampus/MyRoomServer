@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace MyRoomServer.Entities
 {
-    public class HouseMapUser
+    public class UserOwn
     {
         public ulong Id { get; set; }
 
@@ -18,5 +18,11 @@ namespace MyRoomServer.Entities
         [ForeignKey(nameof(UserId))]
         [JsonIgnore]
         public User User { get; set; } = null!;
+
+        public ulong? ProjectId { get; set; }
+
+        [ForeignKey(nameof(ProjectId))]
+        [JsonIgnore]
+        public Project? Project { get; set; }
     }
 }

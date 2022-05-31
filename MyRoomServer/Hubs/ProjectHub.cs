@@ -45,8 +45,8 @@ namespace MyRoomServer.Hubs
         public async Task SendObserve(ulong projectId)
         {
             var identifier = Context.UserIdentifier!;
-            var hasProject = (from item in dbContext.Projects
-                              where item.Id == projectId
+            var hasProject = (from item in dbContext.UserOwns
+                              where item.ProjectId == projectId
                               where item.UserId == Guid.Parse(identifier)
                               select item).Any();
 
