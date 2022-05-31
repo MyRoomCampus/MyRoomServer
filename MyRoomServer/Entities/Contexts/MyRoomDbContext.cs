@@ -15,6 +15,7 @@ namespace MyRoomServer.Entities.Contexts
         public DbSet<Widget> Widgets { get; set; } = null!;
         public DbSet<AgentHouse> AgentHouses { get; set; } = null!;
         public DbSet<Media> Medias { get; set; } = null!;
+        public DbSet<UserOwn> UserOwns { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

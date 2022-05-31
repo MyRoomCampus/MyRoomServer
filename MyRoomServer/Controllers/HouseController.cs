@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyRoomServer.Entities.Contexts;
+using MyRoomServer.Extentions;
 using MyRoomServer.Models;
 
 namespace MyRoomServer.Controllers
@@ -22,32 +23,33 @@ namespace MyRoomServer.Controllers
         /// </summary>
         /// <param name="page">第几页</param>
         /// <param name="perpage">每页多少条数据</param>
+        /// <param name="query">模糊查询（可选参数）</param>
         /// <returns></returns>
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> Get([FromQuery] int page, [FromQuery] int perpage)
+        public async Task<IActionResult> Get([FromQuery] int page, [FromQuery] int perpage, [FromQuery] string? query)
         {
-            var res = await (from item in dbContext.AgentHouses
-                             select item).Skip((page - 1) * perpage)
+            var sqlQuery = (from item in dbContext.AgentHouses
+                            select item);
+
+            if (query != null)
+            {
+                sqlQuery = sqlQuery.Where(x => x.ListingName.Contains(query)
+                    || x.CityName.Contains(query)
+                    || x.NeighborhoodName.Contains(query));
+            }
+
+            var res = await sqlQuery.Skip((page - 1) * perpage)
                                          .Take(perpage)
                                          .AsNoTracking()
                                          .ToListAsync();
+            var cnt = await sqlQuery.CountAsync();
 
-            return Ok(new ApiRes("获取成功", res));
-        }
-
-        /// <summary>
-        /// 获取房产信息的数量
-        /// </summary>
-        /// <returns></returns>
-        /// <response code="200">房产信息的数量</response>
-        [HttpGet("count")]
-        [AllowAnonymous]
-        public async Task<IActionResult> Get()
-        {
-            var cnt = await (from item in dbContext.AgentHouses
-                             select item).CountAsync();
-            return Ok(new ApiRes("获取成功", cnt));
+            return Ok(new
+            {
+                Count = cnt,
+                Data = res,
+            });
         }
 
         /// <summary>
@@ -63,12 +65,30 @@ namespace MyRoomServer.Controllers
         {
             var res = await dbContext.AgentHouses.FindAsync(id);
 
-            if(res == null)
+            if (res == null)
             {
                 return NotFound();
             }
 
             return Ok(new ApiRes("获取成功", res));
+        }
+
+        /// <summary>
+        /// 查看用户发布的房产信息
+        /// </summary>
+        /// <returns></returns>
+        /// <response code="200">用户所拥有的房产信息的Id（允许使用这些Id创建项目）</response>
+        [HttpGet("own")]
+        [Authorize(Policy = IdentityPolicyNames.CommonUser)]
+        public async Task<IActionResult> GetByUserId()
+        {
+            var uid = this.GetUserId();
+            var userOwnHouses = await dbContext.UserOwns
+                .Where(x => x.UserId == Guid.Parse(uid))
+                .Select(x => x.HouseId)
+                .ToListAsync();
+
+            return Ok(new ApiRes("获取成功", userOwnHouses));
         }
     }
 }
