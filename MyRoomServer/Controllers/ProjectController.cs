@@ -19,9 +19,12 @@ namespace MyRoomServer.Controllers
             this.dbContext = dbContext;
         }
 
+
         /// <summary>
         /// 获取该用户的所有项目信息
         /// </summary>
+        /// <param name="page">第几页</param>
+        /// <param name="perpage">每页的数据数</param>
         /// <returns></returns>
         [HttpGet]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
@@ -31,7 +34,12 @@ namespace MyRoomServer.Controllers
             // TODO 验证在判断符号两边进行运算的影响
             var res = await (from item in dbContext.Projects
                              where item.UserId == Guid.Parse(uid)
-                             select item).Skip((page - 1) * perpage)
+                             select new
+                             {
+                                 item.Id,
+                                 item.Name,
+                                 item.CreatedAt,
+                             }).Skip((page - 1) * perpage)
                                          .Take(perpage)
                                          .AsNoTracking()
                                          .ToListAsync();
@@ -43,22 +51,22 @@ namespace MyRoomServer.Controllers
             return Ok(new ApiRes("获取成功", new { res, count }));
         }
 
-        ///// <summary>
-        ///// 获取项目信息
-        ///// </summary>
-        ///// <param name="id">项目Id</param>
-        ///// <returns></returns>
-        //[HttpGet("{id}")]
-        //[AllowAnonymous]
-        //public async Task<IActionResult> GetAsync([FromRoute] int id)
-        //{
-        //    var project = await dbContext.Projects.FindAsync(id);
-        //    if (project == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    return Ok(new ApiRes("获取成功", project.TransferData));
-        //}
+        /// <summary>
+        /// 获取项目信息
+        /// </summary>
+        /// <param name="id">项目Id</param>
+        /// <returns></returns>
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetOne([FromRoute] int id)
+        {
+            var project = await dbContext.Projects.FindAsync(id);
+            if (project == null)
+            {
+                return NotFound();
+            }
+            return Ok(new ApiRes("获取成功", project));
+        }
 
         /// <summary>
         /// 创建一个项目信息
