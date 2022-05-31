@@ -218,5 +218,29 @@ namespace MyRoomServer.Controllers
                 return BadRequest(new ApiRes("此用户名不可用"));
             }
         }
+
+        /// <summary>
+        /// 用户注销
+        /// </summary>
+        /// <returns></returns>
+        /// <response code="200">注销成功</response>
+        /// <response code="400">使用了已注销的用户访问此接口</response>
+        /// <response code="401">未登录</response>
+        [HttpDelete("cancel")]
+        [Authorize(Policy = IdentityPolicyNames.CommonUser)]
+        public async Task<IActionResult> UserCancel()
+        {
+            var uid = this.GetUserId();
+            var user = await dbContext.Users.FindAsync(uid);
+
+            if(user == null)
+            {
+                return BadRequest(new ApiRes("用户不存在"));
+            }
+
+            dbContext.Users.Remove(user);
+            await dbContext.SaveChangesAsync();
+            return Ok(new ApiRes("注销成功"));
+        }
     }
 }
