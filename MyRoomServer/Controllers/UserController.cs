@@ -32,7 +32,7 @@ namespace MyRoomServer.Controllers
         /// <response code="400">用户不存在（用户在注销的情况下访问此接口）</response>
         [HttpPut("password")]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
-        public async Task<IActionResult> UpdatePassword([Password, FromForm] string password)
+        public async Task<IActionResult> UpdatePassword([Password, Required, FromForm] string password)
         {
             var uid = this.GetUserId();
             var user = await dbContext.Users.FindAsync(Guid.Parse(uid));

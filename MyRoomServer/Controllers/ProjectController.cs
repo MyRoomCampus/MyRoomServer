@@ -76,31 +76,34 @@ namespace MyRoomServer.Controllers
         /// <returns></returns>
         /// <response code="200">创建成功</response>
         /// <response code="400">此房产信息已创建过项目</response>
-        /// <response code="401">项目Id与用户的房产信息不匹配</response>
+        /// <response code="401">此房产信息不属于该用户</response>
         [HttpPost]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
-        public async Task<IActionResult> PostAsync([FromBody] Project project)
+        public async Task<IActionResult> PostAsync([FromBody] TransferProject project)
         {
             var uid = Guid.Parse(this.GetUserId());
 
-            var hasHouse = (from item in dbContext.UserOwns
-                            where item.UserId == uid && item.HouseId == project.Id
-                            select item).Any();
+            var ownInfo = (from item in dbContext.UserOwns
+                            where item.UserId == uid && item.HouseId == project.HouseId
+                            select item).SingleOrDefault();
 
-            if (!hasHouse)
+            if(ownInfo == null)
             {
-                return Unauthorized(new ApiRes("项目Id与用户房产信息不匹配"));
+                return BadRequest(new ApiRes("此房产信息不属于该用户"));
             }
 
-            try
+            if (ownInfo.Project != null)
             {
-                await dbContext.Projects.AddAsync(project);
-                await dbContext.SaveChangesAsync();
+                return BadRequest(new ApiRes("此房产信息已有项目"));
             }
-            catch (Exception)
+
+            ownInfo.Project = new Project
             {
-                return BadRequest(new ApiRes("此房产信息已创建项目"));
-            }
+                Name = project.Name,
+                Data = project.Data,
+            };
+
+            await dbContext.SaveChangesAsync();
             return Ok(new ApiRes("创建成功"));
         }
 
@@ -111,23 +114,29 @@ namespace MyRoomServer.Controllers
         /// <returns></returns>
         [HttpPut("{id}")]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
-        public async Task<IActionResult> PutAsync([FromBody] Project project)
+        public async Task<IActionResult> PutAsync([FromBody] TransferProject project)
         {
-            var hasProject = (from item in dbContext.UserOwns
-                              where item.Id == project.Id
-                              select item).AnyAsync();
+            var uid = Guid.Parse(this.GetUserId());
 
-            var uid = this.GetUserId();
+            var ownInfo = (from item in dbContext.UserOwns
+                           where item.UserId == uid && item.HouseId == project.HouseId
+                           select item).SingleOrDefault();
 
-            if (hasProject == null)
+            if (ownInfo == null)
             {
-                return NotFound(new ApiRes("项目不存在"));
+                return BadRequest(new ApiRes("此房产信息不属于该用户"));
             }
 
-            dbContext.Projects.Update(project);
+            if (ownInfo.Project == null)
+            {
+                return BadRequest(new ApiRes("此房产信息尚未创建项目"));
+            }
+
+            ownInfo.Project.Name = project.Name;
+            ownInfo.Project.Data = project.Data;
 
             await dbContext.SaveChangesAsync();
-            return Ok(new ApiRes("更新成功"));
+            return Ok(new ApiRes("修改成功"));
         }
 
         /// <summary>
@@ -158,6 +167,7 @@ namespace MyRoomServer.Controllers
             {
                 return Unauthorized(new ApiRes("此项目并不属于该用户"));
             }
+
             dbContext.Projects.Remove(project);
             await dbContext.SaveChangesAsync();
             return Ok(new ApiRes("删除成功"));
