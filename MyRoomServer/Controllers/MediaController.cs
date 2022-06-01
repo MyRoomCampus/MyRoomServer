@@ -65,7 +65,7 @@ namespace MyRoomServer.Controllers
         }
 
         /// <summary>
-        /// 上传资源，最大 10MB
+        /// 上传资源，最大 100MB
         /// </summary>
         /// <param name="resource">资源数据</param>
         /// <param name="type">资源数据的格式</param>
@@ -76,7 +76,7 @@ namespace MyRoomServer.Controllers
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
         public async Task<IActionResult> OnPost([FromForm] IFormFile resource, [FromForm] string type)
         {
-            if (resource.Length > 1024 * 1024 * 10) return await Task.FromResult(StatusCode(413));
+            if (resource.Length > 1024 * 1024 * 100) return await Task.FromResult(StatusCode(413));
             var buffer = new byte[resource.Length];
 
             using var avatarStream = resource.OpenReadStream();
