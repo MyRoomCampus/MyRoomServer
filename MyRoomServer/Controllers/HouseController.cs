@@ -82,10 +82,14 @@ namespace MyRoomServer.Controllers
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
         public async Task<IActionResult> GetByUserId()
         {
+            // TODO 需要优化
             var uid = this.GetUserId();
             var userOwnHouses = await dbContext.UserOwns
                 .Where(x => x.UserId == Guid.Parse(uid))
-                .Select(x => x.HouseId)
+                .Select(x => new { 
+                    x.HouseId,
+                    x.House.ListingName,
+                })
                 .ToListAsync();
 
             return Ok(new ApiRes("获取成功", userOwnHouses));
