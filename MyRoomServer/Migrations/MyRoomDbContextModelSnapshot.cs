@@ -342,7 +342,7 @@ namespace MyRoomServer.Migrations
                     b.HasIndex(new[] { "SourceCode", "StartVersion", "LastVersion" }, "uniq_source_code_st_ver_lt_ver")
                         .IsUnique();
 
-                    b.ToTable("ag_house", (string)null);
+                    b.ToTable("AgentHouses");
                 });
 
             modelBuilder.Entity("MyRoomServer.Entities.Media", b =>
@@ -375,7 +375,7 @@ namespace MyRoomServer.Migrations
                 {
                     b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint(20) unsigned");
+                        .HasColumnType("bigint unsigned");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -445,7 +445,7 @@ namespace MyRoomServer.Migrations
                         .HasColumnType("bigint(20) unsigned");
 
                     b.Property<ulong?>("ProjectId")
-                        .HasColumnType("bigint(20) unsigned");
+                        .HasColumnType("bigint unsigned");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("char(36)");
@@ -484,7 +484,7 @@ namespace MyRoomServer.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<ulong?>("ProjectId1")
-                        .HasColumnType("bigint(20) unsigned");
+                        .HasColumnType("bigint unsigned");
 
                     b.Property<string>("Style")
                         .IsRequired()
@@ -500,17 +500,6 @@ namespace MyRoomServer.Migrations
                     b.HasIndex("ProjectId1");
 
                     b.ToTable("Widgets");
-                });
-
-            modelBuilder.Entity("MyRoomServer.Entities.Project", b =>
-                {
-                    b.HasOne("MyRoomServer.Entities.AgentHouse", "House")
-                        .WithMany()
-                        .HasForeignKey("Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("House");
                 });
 
             modelBuilder.Entity("MyRoomServer.Entities.UserOwn", b =>
