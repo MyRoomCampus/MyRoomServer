@@ -8,9 +8,6 @@ namespace MyRoomServer.Entities.Contexts
         {
             modelbuilder.Entity<UserOwn>(entity =>
             {
-                entity.HasIndex(e => e.HouseId).IsUnique(true);
-
-                entity.HasIndex(e => e.ProjectId).IsUnique(true);
             });
         }
     }
