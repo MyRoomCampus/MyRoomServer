@@ -23,69 +23,21 @@ namespace MyRoomServer.Hubs
             public const string ReveiveAnswer = nameof(ReveiveAnswer);
         }
 
-        /// <summary>
-        /// 连接的类型
-        /// </summary>
-        private enum ConnectionType
-        {
-            /// <summary>
-            /// 一般客户
-            /// </summary>
-            User,
-
-            /// <summary>
-            /// 经纪人
-            /// </summary>
-            Admin
-        }
-
-        private record ConnectionInfo(ConnectionType Type, ulong ProjectId);
-
-        private record ProjectInfo(string? AdminConnectionId, HashSet<string> ClientConnectionIds);
-
-        /// <summary>
-        /// 用于缓存的键
-        /// </summary>
-        private static class CacheKeys
-        {
-            const string KeyConnectionInfo = $"_{nameof(KeyConnectionInfo)}_";
-            const string KeyProjectInfo = $"_${nameof(KeyProjectInfo)}_";
-
-            public static string GetConnectionInfo(string connectionId)
-            {
-                return $"{KeyConnectionInfo}{connectionId}";
-            }
-
-            public static string GetProjectInfo(ulong projectId)
-            {
-                return $"{KeyProjectInfo}{projectId}";
-            }
-        }
-
-        private void SetConnectionInfo(string connectionId, ConnectionInfo info)
-        {
-            cache.Set(CacheKeys.GetConnectionInfo(connectionId), info, new TimeSpan(0, 10, 0));
-        }
-
-        private bool TryGetConnectionInfo(string connectionId, out ConnectionInfo value)
-        {
-            return cache.TryGetValue(CacheKeys.GetConnectionInfo(connectionId), out value);
-        }
-
-        private void SetProjectInfo(ulong projectId, ProjectInfo info)
-        {
-            cache.Set(CacheKeys.GetProjectInfo(projectId), info, new TimeSpan(0, 10, 0));
-        }
-
-        private bool TryGetProjectInfo(ulong projectId, out ProjectInfo info)
-        {
-            return cache.TryGetValue(CacheKeys.GetProjectInfo(projectId), out info);
-        }
-
         public ProjectHub(IMemoryCache cache, MyRoomDbContext dbContext)
         {
             this.cache = cache;
             this.dbContext = dbContext;
+        }
+
+        private async Task SendVisitToClient(ProjectInfo info)
+        {
+            var adminConnectionId = info.AdminConnectionId;
+            if (adminConnectionId == null)
+            {
+                return;
+            }
+
+            await Clients.Client(adminConnectionId).SendAsync(ReceiveMethods.ReceiveVisit, info.ClientInfos);
         }
     }
 }

@@ -16,25 +16,25 @@ namespace MyRoomServer.Hubs
         /// <returns></returns>
         public async Task SendVisit(ulong projectId)
         {
-            SetConnectionInfo(
-                Context.ConnectionId,
-                new ConnectionInfo(ConnectionType.User, projectId));
+            var connectionInfo = new ConnectionInfo(ConnectionType.User, Context.ConnectionId, this.GetUserName(), projectId);
+
+            SetConnectionInfo(Context.ConnectionId, in connectionInfo);
 
             // TODO 线程不安全
+            // 当 project 信息不存在时, 新建 project, 当 admin 在线时, 给 admin 发送上线消息
             if (TryGetProjectInfo(projectId, out var info))
             {
                 if (info.AdminConnectionId != null)
                 {
-                    // TODO 这里需要仔细考虑应该给 admin 哪些信息
-                    await Clients.Client(info.AdminConnectionId).SendAsync(ReceiveMethods.ReceiveVisit, Context.ConnectionId);
+                    await SendVisitToClient(info);
                 }
-                info.ClientConnectionIds.Add(Context.ConnectionId);
-                SetProjectInfo(projectId, info);
+                info.ClientInfos.Add(Context.ConnectionId, connectionInfo);
             }
             else
             {
-                SetProjectInfo(projectId, new ProjectInfo(null, new HashSet<string> { Context.ConnectionId }));
+                info = new ProjectInfo(null, new Dictionary<string, ConnectionInfo> { { Context.ConnectionId, connectionInfo } });
             }
+            SetProjectInfo(projectId, in info);
         }
 
         /// <summary>
@@ -56,27 +56,26 @@ namespace MyRoomServer.Hubs
                 return;
             }
 
-            SetConnectionInfo(
-                Context.ConnectionId,
-                new ConnectionInfo(ConnectionType.Admin, projectId));
+            var connectionInfo = new ConnectionInfo(ConnectionType.Admin, Context.ConnectionId, this.GetUserName(), projectId);
+            SetConnectionInfo(Context.ConnectionId, in connectionInfo);
 
             // TODO 线程不安全
             if (TryGetProjectInfo(projectId, out var info))
             {
-                if (info.AdminConnectionId != null)
-                {
-                    // TODO 这里需要仔细考虑应该给 admin 哪些信息
-                    await Clients.Client(info.AdminConnectionId).SendAsync(ReceiveMethods.ReceiveVisit, Context.ConnectionId);
-                }
-                info.ClientConnectionIds.Add(Context.ConnectionId);
-                SetProjectInfo(projectId, info);
+                SetProjectInfo(projectId, info with { AdminConnectionId = Context.ConnectionId });
             }
             else
             {
-                SetProjectInfo(projectId, new ProjectInfo(null, new HashSet<string> { Context.ConnectionId }));
+                SetProjectInfo(projectId, new ProjectInfo(Context.ConnectionId, new Dictionary<string, ConnectionInfo>()));
             }
         }
 
+        /// <summary>
+        /// 发送消息
+        /// </summary>
+        /// <param name="message">消息内容</param>
+        /// <param name="connectId">连接Id</param>
+        /// <returns></returns>
         public async Task SendMessage(string message, string connectId)
         {
             var userName = this.GetUserName();
@@ -131,12 +130,7 @@ namespace MyRoomServer.Hubs
 
         public override Task OnDisconnectedAsync(Exception? exception)
         {
-            var ok = cache.TryGetValue(Context.UserIdentifier, out var user);
-            if (ok)
-            {
-                cache.Remove(Context.UserIdentifier);
-                cache.Remove(user);
-            }
+            RemoveConnectionInfo(Context.ConnectionId);
             return base.OnDisconnectedAsync(exception);
         }
     }
