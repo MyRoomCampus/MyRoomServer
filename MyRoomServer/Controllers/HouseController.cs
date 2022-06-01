@@ -86,7 +86,8 @@ namespace MyRoomServer.Controllers
             var uid = this.GetUserId();
             var userOwnHouses = await dbContext.UserOwns
                 .Where(x => x.UserId == Guid.Parse(uid))
-                .Select(x => new { 
+                .Select(x => new
+                {
                     x.HouseId,
                     x.House.ListingName,
                 })
