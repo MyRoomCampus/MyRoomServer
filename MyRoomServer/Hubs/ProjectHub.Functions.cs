@@ -16,8 +16,8 @@ namespace MyRoomServer.Hubs
         {
             public const string ReceiveVisit = nameof(ReceiveVisit);
             public const string ReceiveMessage = nameof(ReceiveMessage);
-            public const string ReceivePreoffer = nameof(ReceivePreoffer);
-            public const string ReceivePreanswer = nameof(ReceivePreanswer);
+            public const string ReceivePreOffer = nameof(ReceivePreOffer);
+            public const string ReceivePreAnswer = nameof(ReceivePreAnswer);
             public const string ReceiceIceCandidate = nameof(ReceiceIceCandidate);
             public const string ReceiveOffer = nameof(ReceiveOffer);
             public const string ReveiveAnswer = nameof(ReveiveAnswer);
