@@ -12,7 +12,6 @@ namespace MyRoomServer.Entities.Contexts
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<UserClaim> UsersClaims { get; set; } = null!;
         public DbSet<Project> Projects { get; set; } = null!;
-        public DbSet<Widget> Widgets { get; set; } = null!;
         public DbSet<AgentHouse> AgentHouses { get; set; } = null!;
         public DbSet<Media> Medias { get; set; } = null!;
         public DbSet<UserOwn> UserOwns { get; set; } = null!;

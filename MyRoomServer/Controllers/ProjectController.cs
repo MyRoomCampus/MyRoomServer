@@ -30,16 +30,14 @@ namespace MyRoomServer.Controllers
         public async Task<IActionResult> Get([FromQuery] int page, [FromQuery] int perpage)
         {
             var uid = this.GetUserId();
-            // TODO 验证在判断符号两边进行运算的影响
-            var query = (from owns in dbContext.UserOwns
-                         join project in dbContext.Projects
-                         on owns.ProjectId equals project.Id
-                         where owns.UserId == Guid.Parse(uid)
+
+            var query = (from own in dbContext.UserOwns
+                         where own.Project != null
                          select new
                          {
-                             project.Id,
-                             project.Name,
-                             project.CreatedAt,
+                             own.HouseId,
+                             own.Project!.Name,
+                             own.Project.CreatedAt,
                          });
 
             var data = await query.Skip((page - 1) * perpage)
@@ -49,19 +47,30 @@ namespace MyRoomServer.Controllers
 
             var count = await query.CountAsync();
 
+            // TODO 也许需要修改一下 返回格式 但如何优雅呢？
+
             return Ok(new ApiRes("获取成功", new { data, count }));
         }
 
         /// <summary>
         /// 获取项目信息
         /// </summary>
-        /// <param name="id">项目Id</param>
+        /// <param name="id">房产信息Id</param>
         /// <returns></returns>
         [HttpGet("{id}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetOne([FromRoute] ulong id)
         {
-            var project = await dbContext.Projects.FindAsync(id);
+            var project = await (from item in dbContext.UserOwns
+                                 where item.HouseId == id
+                                 select new
+                                 {
+                                     item.HouseId,
+                                     item.Project!.Name,
+                                     item.Project.CreatedAt,
+                                     item.Project.Data
+                                 }).AsNoTracking().SingleOrDefaultAsync();
+
             if (project == null)
             {
                 return NotFound();
@@ -76,64 +85,80 @@ namespace MyRoomServer.Controllers
         /// <returns></returns>
         /// <response code="200">创建成功</response>
         /// <response code="400">此房产信息已创建过项目</response>
-        /// <response code="401">项目Id与用户的房产信息不匹配</response>
+        /// <response code="401">此房产信息不属于该用户</response>
         [HttpPost]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
-        public async Task<IActionResult> PostAsync([FromBody] Project project)
+        public async Task<IActionResult> PostAsync([FromBody] TransferProject project)
         {
             var uid = Guid.Parse(this.GetUserId());
 
-            var hasHouse = (from item in dbContext.UserOwns
-                            where item.UserId == uid && item.HouseId == project.Id
-                            select item).Any();
+            var ownInfo = (from item in dbContext.UserOwns
+                           where item.UserId == uid && item.HouseId == project.HouseId
+                           select item).SingleOrDefault();
 
-            if (!hasHouse)
+            if (ownInfo == null)
             {
-                return Unauthorized(new ApiRes("项目Id与用户房产信息不匹配"));
+                return BadRequest(new ApiRes("此房产信息不属于该用户"));
             }
 
-            try
+            if (ownInfo.Project != null)
             {
-                await dbContext.Projects.AddAsync(project);
-                await dbContext.SaveChangesAsync();
+                return BadRequest(new ApiRes("此房产信息已有项目"));
             }
-            catch (Exception)
+
+            ownInfo.Project = new Project
             {
-                return BadRequest(new ApiRes("此房产信息已创建项目"));
-            }
+                Name = project.Name,
+                Data = project.Data,
+            };
+
+            await dbContext.SaveChangesAsync();
             return Ok(new ApiRes("创建成功"));
         }
 
         /// <summary>
         /// 更新项目信息
         /// </summary>
-        /// <param name="project">项目信息</param>
+        /// <param name="transferProject">项目信息</param>
         /// <returns></returns>
-        [HttpPut("{id}")]
+        [HttpPut]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
-        public async Task<IActionResult> PutAsync([FromBody] Project project)
+        public async Task<IActionResult> PutAsync([FromBody] TransferProject transferProject)
         {
-            var hasProject = (from item in dbContext.UserOwns
-                              where item.Id == project.Id
-                              select item).AnyAsync();
+            var uid = Guid.Parse(this.GetUserId());
 
-            var uid = this.GetUserId();
+            var ownInfo = (from item in dbContext.UserOwns
+                           where item.UserId == uid && item.HouseId == transferProject.HouseId
+                           select item).SingleOrDefault();
 
-            if (hasProject == null)
+            if (ownInfo == null)
             {
-                return NotFound(new ApiRes("项目不存在"));
+                return BadRequest(new ApiRes("此房产信息不属于该用户"));
             }
 
-            dbContext.Projects.Update(project);
+            if (ownInfo.ProjectId == null)
+            {
+                return BadRequest(new ApiRes("此房产信息尚未创建项目"));
+            }
+
+            var project = await dbContext.Projects.FindAsync(ownInfo.ProjectId);
+
+            if (project == null)
+            {
+                throw new NullReferenceException("Project shouldn't be null.");
+            }
+
+            project.Name = transferProject.Name;
+            project.Data = transferProject.Data;
 
             await dbContext.SaveChangesAsync();
-            return Ok(new ApiRes("更新成功"));
+            return Ok(new ApiRes("修改成功"));
         }
 
         /// <summary>
         /// 删除一个项目
         /// </summary>
-        /// <param name="id">项目Id</param>
+        /// <param name="id">房产信息Id</param>
         /// <returns></returns>
         /// <response code="200">删除成功</response>
         /// <response code="401">不是你的项目</response>
@@ -142,46 +167,28 @@ namespace MyRoomServer.Controllers
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
         public async Task<IActionResult> DeleteAsync([FromRoute] ulong id)
         {
-            var project = await dbContext.Projects.FindAsync(id);
+            var uid = Guid.Parse(this.GetUserId());
 
-            if (project == null)
+            var ownInfo = (from item in dbContext.UserOwns
+                           where item.UserId == uid && item.HouseId == id
+                           select item).SingleOrDefault();
+
+            if (ownInfo == null)
+            {
+                return Unauthorized(new ApiRes("项目不属于该用户"));
+            }
+
+            if (ownInfo.ProjectId == null)
             {
                 return NotFound(new ApiRes("项目不存在"));
             }
 
-            var uid = this.GetUserId();
-            var isUserHasProject = await (from item in dbContext.UserOwns
-                                          where item.UserId == Guid.Parse(uid)
-                                          where item.HouseId == id
-                                          select item).AnyAsync();
-            if (!isUserHasProject)
-            {
-                return Unauthorized(new ApiRes("此项目并不属于该用户"));
-            }
-            dbContext.Projects.Remove(project);
+            var project = await dbContext.Projects.FindAsync(ownInfo.ProjectId);
+            dbContext.Projects.Remove(project!);
+            ownInfo.ProjectId = null;
+
             await dbContext.SaveChangesAsync();
             return Ok(new ApiRes("删除成功"));
-        }
-
-        /// <summary>
-        /// 从房产信息Id查找项目
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        [HttpGet("from-house/{id}")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetFromHouseId([FromRoute] ulong id)
-        {
-            var project = await (from owns in dbContext.UserOwns
-                                 where owns.HouseId == id
-                                 select owns.Project).AsNoTracking().SingleOrDefaultAsync();
-
-            if (project == null)
-            {
-                return NotFound("不存在此项目");
-            }
-
-            return Ok(new ApiRes("获取成功", project));
         }
     }
 }

@@ -342,7 +342,7 @@ namespace MyRoomServer.Migrations
                     b.HasIndex(new[] { "SourceCode", "StartVersion", "LastVersion" }, "uniq_source_code_st_ver_lt_ver")
                         .IsUnique();
 
-                    b.ToTable("ag_house", (string)null);
+                    b.ToTable("AgentHouses");
                 });
 
             modelBuilder.Entity("MyRoomServer.Entities.Media", b =>
@@ -375,11 +375,14 @@ namespace MyRoomServer.Migrations
                 {
                     b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint(20) unsigned");
+                        .HasColumnType("bigint unsigned");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Data")
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -445,7 +448,7 @@ namespace MyRoomServer.Migrations
                         .HasColumnType("bigint(20) unsigned");
 
                     b.Property<ulong?>("ProjectId")
-                        .HasColumnType("bigint(20) unsigned");
+                        .HasColumnType("bigint unsigned");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("char(36)");
@@ -459,58 +462,6 @@ namespace MyRoomServer.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserOwns");
-                });
-
-            modelBuilder.Entity("MyRoomServer.Entities.Widget", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    b.Property<ulong>("CurrentId")
-                        .HasColumnType("bigint unsigned");
-
-                    b.Property<string>("Data")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("varchar(64)");
-
-                    b.Property<long>("ProjectId")
-                        .HasColumnType("bigint");
-
-                    b.Property<ulong?>("ProjectId1")
-                        .HasColumnType("bigint(20) unsigned");
-
-                    b.Property<string>("Style")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("varchar(64)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProjectId1");
-
-                    b.ToTable("Widgets");
-                });
-
-            modelBuilder.Entity("MyRoomServer.Entities.Project", b =>
-                {
-                    b.HasOne("MyRoomServer.Entities.AgentHouse", "House")
-                        .WithMany()
-                        .HasForeignKey("Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("House");
                 });
 
             modelBuilder.Entity("MyRoomServer.Entities.UserOwn", b =>
@@ -536,18 +487,6 @@ namespace MyRoomServer.Migrations
                     b.Navigation("Project");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("MyRoomServer.Entities.Widget", b =>
-                {
-                    b.HasOne("MyRoomServer.Entities.Project", null)
-                        .WithMany("Data")
-                        .HasForeignKey("ProjectId1");
-                });
-
-            modelBuilder.Entity("MyRoomServer.Entities.Project", b =>
-                {
-                    b.Navigation("Data");
                 });
 #pragma warning restore 612, 618
         }

@@ -8,8 +8,6 @@ namespace MyRoomServer.Entities.Contexts
         {
             modelBuilder.Entity<AgentHouse>(entity =>
             {
-                entity.ToTable("ag_house");
-
                 entity.HasIndex(e => e.CityName, "idx_city_name");
 
                 entity.HasIndex(e => e.CrawlId, "idx_crawl_id");

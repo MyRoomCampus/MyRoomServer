@@ -14,7 +14,7 @@ namespace MyRoomServer.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "ag_house",
+                name: "AgentHouses",
                 columns: table => new
                 {
                     id = table.Column<ulong>(type: "bigint(20) unsigned", nullable: false, comment: "房源 id")
@@ -85,7 +85,26 @@ namespace MyRoomServer.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ag_house", x => x.id);
+                    table.PrimaryKey("PK_AgentHouses", x => x.id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_general_ci");
+
+            migrationBuilder.CreateTable(
+                name: "Medias",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    Size = table.Column<int>(type: "int", nullable: false),
+                    Content = table.Column<byte[]>(type: "longblob", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.ComputedColumn),
+                    Type = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci")
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Medias", x => x.Id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4")
                 .Annotation("Relational:Collation", "utf8mb4_general_ci");
@@ -94,11 +113,10 @@ namespace MyRoomServer.Migrations
                 name: "Projects",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
+                    Id = table.Column<ulong>(type: "bigint unsigned", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci")
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    UserId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn)
                 },
@@ -152,109 +170,178 @@ namespace MyRoomServer.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     ProjectId = table.Column<long>(type: "bigint", nullable: false),
-                    Abscissa = table.Column<long>(type: "bigint", nullable: false),
-                    Ordinate = table.Column<long>(type: "bigint", nullable: false),
-                    Length = table.Column<long>(type: "bigint", nullable: false),
-                    Width = table.Column<long>(type: "bigint", nullable: false),
-                    Data = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci")
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                    Type = table.Column<string>(type: "varchar(64)", maxLength: 64, nullable: false, collation: "utf8mb4_general_ci")
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Name = table.Column<string>(type: "varchar(64)", maxLength: 64, nullable: false, collation: "utf8mb4_general_ci")
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CurrentId = table.Column<ulong>(type: "bigint unsigned", nullable: false),
+                    Data = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: false, collation: "utf8mb4_general_ci")
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Style = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci")
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    ProjectId1 = table.Column<ulong>(type: "bigint unsigned", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Widgets", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Widgets_Projects_ProjectId1",
+                        column: x => x.ProjectId1,
+                        principalTable: "Projects",
+                        principalColumn: "Id");
+                })
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_general_ci");
+
+            migrationBuilder.CreateTable(
+                name: "UserOwns",
+                columns: table => new
+                {
+                    Id = table.Column<ulong>(type: "bigint unsigned", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    HouseId = table.Column<ulong>(type: "bigint(20) unsigned", nullable: false),
+                    UserId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    ProjectId = table.Column<ulong>(type: "bigint unsigned", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserOwns", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserOwns_AgentHouses_HouseId",
+                        column: x => x.HouseId,
+                        principalTable: "AgentHouses",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserOwns_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_UserOwns_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4")
                 .Annotation("Relational:Collation", "utf8mb4_general_ci");
 
             migrationBuilder.CreateIndex(
                 name: "idx_city_name",
-                table: "ag_house",
+                table: "AgentHouses",
                 column: "city_name");
 
             migrationBuilder.CreateIndex(
                 name: "idx_crawl_id",
-                table: "ag_house",
+                table: "AgentHouses",
                 column: "crawl_id");
 
             migrationBuilder.CreateIndex(
                 name: "idx_created_at",
-                table: "ag_house",
+                table: "AgentHouses",
                 column: "created_at");
 
             migrationBuilder.CreateIndex(
                 name: "idx_data_source_id",
-                table: "ag_house",
+                table: "AgentHouses",
                 column: "data_source_id");
 
             migrationBuilder.CreateIndex(
                 name: "idx_dict_house_id",
-                table: "ag_house",
+                table: "AgentHouses",
                 column: "dict_house_id");
 
             migrationBuilder.CreateIndex(
                 name: "idx_house_card",
-                table: "ag_house",
+                table: "AgentHouses",
                 column: "house_card");
 
             migrationBuilder.CreateIndex(
                 name: "idx_neighborhood_code_lt_ver",
-                table: "ag_house",
+                table: "AgentHouses",
                 columns: new[] { "neighborhood_source_code", "last_version" });
 
             migrationBuilder.CreateIndex(
                 name: "idx_offline_code_data_source_id",
-                table: "ag_house",
+                table: "AgentHouses",
                 columns: new[] { "offline_code", "data_source_id" });
 
             migrationBuilder.CreateIndex(
                 name: "idx_online_city_id",
-                table: "ag_house",
+                table: "AgentHouses",
                 column: "online_city_id");
 
             migrationBuilder.CreateIndex(
                 name: "idx_online_house_status",
-                table: "ag_house",
+                table: "AgentHouses",
                 column: "online_house_status");
 
             migrationBuilder.CreateIndex(
                 name: "idx_online_neighborhood_id",
-                table: "ag_house",
+                table: "AgentHouses",
                 column: "online_neighborhood_id");
 
             migrationBuilder.CreateIndex(
                 name: "idx_updated_at",
-                table: "ag_house",
+                table: "AgentHouses",
                 column: "updated_at");
 
             migrationBuilder.CreateIndex(
                 name: "uniq_source_code_st_ver_lt_ver",
-                table: "ag_house",
+                table: "AgentHouses",
                 columns: new[] { "source_code", "start_version", "last_version" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserOwns_HouseId",
+                table: "UserOwns",
+                column: "HouseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserOwns_ProjectId",
+                table: "UserOwns",
+                column: "ProjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserOwns_UserId",
+                table: "UserOwns",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_UserName",
                 table: "Users",
                 column: "UserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Widgets_ProjectId1",
+                table: "Widgets",
+                column: "ProjectId1");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ag_house");
+                name: "Medias");
 
             migrationBuilder.DropTable(
-                name: "Projects");
-
-            migrationBuilder.DropTable(
-                name: "Users");
+                name: "UserOwns");
 
             migrationBuilder.DropTable(
                 name: "UsersClaims");
 
             migrationBuilder.DropTable(
                 name: "Widgets");
+
+            migrationBuilder.DropTable(
+                name: "AgentHouses");
+
+            migrationBuilder.DropTable(
+                name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Projects");
         }
     }
 }

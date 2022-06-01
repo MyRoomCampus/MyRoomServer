@@ -11,8 +11,8 @@ using MyRoomServer.Entities.Contexts;
 namespace MyRoomServer.Migrations
 {
     [DbContext(typeof(MyRoomDbContext))]
-    [Migration("20220530150726_UpdateWidget")]
-    partial class UpdateWidget
+    [Migration("20220601012626_InitialMigration")]
+    partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -344,7 +344,7 @@ namespace MyRoomServer.Migrations
                     b.HasIndex(new[] { "SourceCode", "StartVersion", "LastVersion" }, "uniq_source_code_st_ver_lt_ver")
                         .IsUnique();
 
-                    b.ToTable("ag_house", (string)null);
+                    b.ToTable("AgentHouses");
                 });
 
             modelBuilder.Entity("MyRoomServer.Entities.Media", b =>
@@ -375,9 +375,9 @@ namespace MyRoomServer.Migrations
 
             modelBuilder.Entity("MyRoomServer.Entities.Project", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
+                        .HasColumnType("bigint unsigned");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -386,9 +386,6 @@ namespace MyRoomServer.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("longtext");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("char(36)");
 
                     b.HasKey("Id");
 
@@ -440,6 +437,32 @@ namespace MyRoomServer.Migrations
                     b.ToTable("UsersClaims");
                 });
 
+            modelBuilder.Entity("MyRoomServer.Entities.UserOwn", b =>
+                {
+                    b.Property<ulong>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint unsigned");
+
+                    b.Property<ulong>("HouseId")
+                        .HasColumnType("bigint(20) unsigned");
+
+                    b.Property<ulong?>("ProjectId")
+                        .HasColumnType("bigint unsigned");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HouseId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserOwns");
+                });
+
             modelBuilder.Entity("MyRoomServer.Entities.Widget", b =>
                 {
                     b.Property<long>("Id")
@@ -462,6 +485,9 @@ namespace MyRoomServer.Migrations
                     b.Property<long>("ProjectId")
                         .HasColumnType("bigint");
 
+                    b.Property<ulong?>("ProjectId1")
+                        .HasColumnType("bigint unsigned");
+
                     b.Property<string>("Style")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -473,18 +499,41 @@ namespace MyRoomServer.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProjectId");
+                    b.HasIndex("ProjectId1");
 
                     b.ToTable("Widgets");
+                });
+
+            modelBuilder.Entity("MyRoomServer.Entities.UserOwn", b =>
+                {
+                    b.HasOne("MyRoomServer.Entities.AgentHouse", "House")
+                        .WithMany()
+                        .HasForeignKey("HouseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MyRoomServer.Entities.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId");
+
+                    b.HasOne("MyRoomServer.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("House");
+
+                    b.Navigation("Project");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MyRoomServer.Entities.Widget", b =>
                 {
                     b.HasOne("MyRoomServer.Entities.Project", null)
                         .WithMany("Data")
-                        .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProjectId1");
                 });
 
             modelBuilder.Entity("MyRoomServer.Entities.Project", b =>

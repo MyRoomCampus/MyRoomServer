@@ -42,7 +42,7 @@ namespace MyRoomServer.Controllers
         [ProducesResponseType(typeof(ApiRes), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> RegisterAsync(
             [FromForm, Required, MinLength(6), MaxLength(20)] string username,
-            [FromForm, Password] string password)
+            [FromForm, Required, Password] string password)
         {
             var hasUser = (from item in dbContext.Users
                            where item.UserName == username
@@ -191,7 +191,7 @@ namespace MyRoomServer.Controllers
         public async Task<IActionResult> UserCancel()
         {
             var uid = this.GetUserId();
-            var user = await dbContext.Users.FindAsync(uid);
+            var user = await dbContext.Users.FindAsync(Guid.Parse(uid));
 
             if (user == null)
             {
