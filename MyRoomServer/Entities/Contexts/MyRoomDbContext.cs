@@ -25,6 +25,7 @@ namespace MyRoomServer.Entities.Contexts
 
             BuildAgentHouseModel(modelBuilder);
             BuildUserModel(modelBuilder);
+            BuildUserModel(modelBuilder);
         }
     }
 }
