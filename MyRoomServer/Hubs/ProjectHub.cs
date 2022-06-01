@@ -62,12 +62,14 @@ namespace MyRoomServer.Hubs
             // TODO 线程不安全
             if (TryGetProjectInfo(projectId, out var info))
             {
-                SetProjectInfo(projectId, info with { AdminConnectionId = Context.ConnectionId });
+                info = info with { AdminConnectionId = Context.ConnectionId };
             }
             else
             {
-                SetProjectInfo(projectId, new ProjectInfo(Context.ConnectionId, new Dictionary<string, ConnectionInfo>()));
+                info = new ProjectInfo(Context.ConnectionId, new Dictionary<string, ConnectionInfo>());
             }
+            SetProjectInfo(projectId, info);
+            await SendVisitToClient(info);
         }
 
         /// <summary>
@@ -80,6 +82,8 @@ namespace MyRoomServer.Hubs
         {
             var userName = this.GetUserName();
             await Clients.All.SendAsync(ReceiveMethods.ReceiveMessage, userName, message);
+            // todo 区分客户和经纪人的消息
+            throw new NotImplementedException();
         }
 
         /// <summary>
