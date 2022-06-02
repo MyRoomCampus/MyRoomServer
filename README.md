@@ -66,38 +66,38 @@ AccessToken有效期为60分钟，RefreshToken有效期为432000分钟，当Refr
 
 ### SignalR
 
-#### 查看用户列表
+#### 查看客户列表
 
-##### 用户
+##### 客户
 
-1. 与服务端建立连接
-2. 访问 SendVisit 接口使服务端知道客户访问的是哪个项目
+1. 客户与服务端建立连接
+2. 客户访问 `SendVisit` 接口使服务端知道客户访问的是哪个项目
 3. 服务端建立 `<projectId,<connectionId,userInfo>>` 的字典，记为dic1
-4. 建立 `<connectionId,projectId>` 的字典，记为 dic2
+4. 服务端建立 `<connectionId,projectId>` 的字典，记为 dic2
 5. 若经纪人在线，则向其通知上线信息
-6. 用户断开连接
-7. 由connectionId 从 dic2 获取 projectId
-8. 从projectId 中删除对应的 connectionId
-9. 若经纪人在线，则向其通知下线信息
+6. 客户断开连接
+7. 服务端由connectionId 从 dic2 获取 projectId
+8. 服务端从projectId 中删除对应的 connectionId
+9. 若经纪人在线，则使用 `ReceiveVisit` 通知经纪人
 
 > 也许在用户访问量大的情况下，以固定频率推送用户变化的信息是更可行的方案？
 
 ##### 经纪人
 
-1. 与服务端建立连接
-2. 访问 `SendObserve` 接口使服务端知道经纪人开始查看此项目
-3. 使用 `ReceiveVisit` 向经纪人推送用户列表
-4. 随后用户数量有变化的时候也会使用 `ReceiveVisit` 通知经纪人
+1. 经纪人与服务端建立连接
+2. 经纪人访问 `SendObserve` 接口使服务端知道经纪人开始查看此项目
+3. 经纪人使用 `ReceiveVisit` 方法接收服务端推送的客户列表
+4. 服务端在随后客户数量有变化的时候也会使用 `ReceiveVisit` 通知经纪人
 
 #### 建立通话
 
 详细流程可见[方法使用流程](#方法使用流程)
 
-经纪人在发起通话请求时同时携带一个 offerKey，此 offerKey 作为此次请求的凭证。经纪人系统在随后收到的请求中只有含有此 offerKey 才会作响应。若是用户拒绝了此次通话或请求超时，则此 offerKey 废弃，防止意料之外的连接。
+经纪人在发起通话请求时同时携带一个 offerKey，此 offerKey 作为此次请求的凭证。经纪人系统在随后收到的请求中只有含有此 offerKey 才会作响应。若是客户拒绝了此次通话或请求超时，则此 offerKey 废弃，防止意料之外的连接。
 
 客户在接收通话后缓存此 offerKey 随后的协商过程只接受含有此 offerKey 的请求，并在每次请求中携带此 offerKey。
 
-服务端在 `SendPreoffer` 时就缓存此 offerKey 并记录通话的两方。以便在后续协商过程中只需要收到 offerKey 即可将数据传递给两方。
+服务端在 `SendPreOffer` 时就缓存此 offerKey 并记录通话的两方。以便在后续协商过程中只需要收到 offerKey 即可将数据传递给两方。
 
 #### 方法使用流程
 
