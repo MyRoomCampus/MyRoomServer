@@ -93,9 +93,9 @@ namespace MyRoomServer.Controllers
             {
                 HouseId = id,
                 Name = project.Name,
-                IsPulished = project.IsPublished,
                 CreatedAt = project.CreatedAt,
-                Data = project.Data
+                IsPublished = project.IsPublished,
+                Data = project.Data,
             }));
         }
 
@@ -173,6 +173,34 @@ namespace MyRoomServer.Controllers
             project.Data = transferProject.Data;
 
             await dbContext.SaveChangesAsync();
+            return Ok(new ApiRes("修改成功"));
+        }
+
+        /// <summary>
+        /// 更新项目是否发布
+        /// </summary>
+        /// <param name="id">房产id</param>
+        /// <param name="isPublish">是否发布</param>
+        /// <returns></returns>
+        [HttpPut("publish/{id}")]
+        [Authorize(Policy = IdentityPolicyNames.CommonUser)]
+        public async Task<IActionResult> PutIsPublish([FromRoute] ulong id, [FromForm] bool isPublish)
+        {
+            var uid = Guid.Parse(this.GetUserId());
+
+            var project = await (from own in dbContext.UserOwns
+                           where own.HouseId == id
+                           where own.UserId == uid
+                           select own.Project).SingleOrDefaultAsync();
+
+            if(project == null)
+            {
+                return NotFound("用户不存在此项目");
+            }
+
+            project.IsPublished = isPublish;
+            await dbContext.SaveChangesAsync();
+
             return Ok(new ApiRes("修改成功"));
         }
 
