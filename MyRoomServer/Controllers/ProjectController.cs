@@ -32,12 +32,14 @@ namespace MyRoomServer.Controllers
             var uid = this.GetUserId();
 
             var query = (from own in dbContext.UserOwns
-                         where own.Project != null
+                         join project in dbContext.Projects
+                         on own.ProjectId equals project.Id
                          select new
                          {
                              own.HouseId,
-                             own.Project!.Name,
-                             own.Project.CreatedAt,
+                             project.Name,
+                             project.IsPublished,
+                             project.CreatedAt,
                          });
 
             var data = await query.Skip((page - 1) * perpage)
@@ -61,21 +63,40 @@ namespace MyRoomServer.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetOne([FromRoute] ulong id)
         {
-            var project = await (from item in dbContext.UserOwns
+            var ownInfo = await (from item in dbContext.UserOwns
                                  where item.HouseId == id
                                  select new
                                  {
-                                     item.HouseId,
-                                     item.Project!.Name,
-                                     item.Project.CreatedAt,
-                                     item.Project.Data
-                                 }).AsNoTracking().SingleOrDefaultAsync();
+                                     item.ProjectId,
+                                     item.UserId
+                                 }).SingleOrDefaultAsync();
 
-            if (project == null)
+            // 若此项目不属于该用户 则用户查询不到未公开的项目
+            if (ownInfo == null)
             {
-                return NotFound();
+                return NotFound(new ApiRes("项目不存在"));
             }
-            return Ok(new ApiRes("获取成功", project));
+
+            if(ownInfo.ProjectId == null)
+            {
+                return NotFound(new ApiRes("项目不存在"));
+            }
+
+            var project = await dbContext.Projects.FindAsync(ownInfo.ProjectId);
+
+            if (project == null || (ownInfo.UserId != Guid.Parse(this.GetUserId()) && project.IsPublished == false))
+            {
+                return NotFound(new ApiRes("项目不存在"));
+            }
+
+            return Ok(new ApiRes("获取成功", new
+            {
+                HouseId = id,
+                Name = project.Name,
+                IsPulished = project.IsPublished,
+                CreatedAt = project.CreatedAt,
+                Data = project.Data
+            }));
         }
 
         /// <summary>
