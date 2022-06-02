@@ -29,6 +29,11 @@ namespace MyRoomServer.Entities
         public DateTime CreatedAt { get; init; }
 
         /// <summary>
+        /// 项目是否发布
+        /// </summary>
+        public bool IsPublished { get; set; } = false;
+
+        /// <summary>
         /// 组件数据
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
