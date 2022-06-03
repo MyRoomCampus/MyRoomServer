@@ -34,6 +34,8 @@ namespace MyRoomServer.Controllers
             var sqlQuery = from house in dbContext.AgentHouses
                            join own in dbContext.UserOwns
                            on house.Id equals own.HouseId
+                           join project in dbContext.Projects
+                           on own.ProjectId equals project.Id
                            select new
                            {
                                house.Id,
@@ -90,7 +92,8 @@ namespace MyRoomServer.Controllers
                                house.OnlineAreaId,
                                house.PropertyOnly,
                                house.PropertyCertificatePeriod,
-                               HaveProject = own.ProjectId != null
+                               HaveProject = own.ProjectId != null,
+                               HaveProjectPublished = project.IsPublished,
                            };
 
             if (query != null)
@@ -127,6 +130,8 @@ namespace MyRoomServer.Controllers
             var res = await (from house in dbContext.AgentHouses
                              join own in dbContext.UserOwns
                              on house.Id equals own.HouseId
+                             join project in dbContext.Projects
+                             on own.ProjectId equals project.Id
                              where house.Id == id
                              select new
                              {
@@ -184,7 +189,8 @@ namespace MyRoomServer.Controllers
                                  house.OnlineAreaId,
                                  house.PropertyOnly,
                                  house.PropertyCertificatePeriod,
-                                 HaveProject = own.ProjectId != null
+                                 HaveProject = own.ProjectId != null,
+                                 HaveProjectPublished = project.IsPublished,
                              }).AsNoTracking().SingleOrDefaultAsync();
 
             if (res == null)
@@ -206,12 +212,15 @@ namespace MyRoomServer.Controllers
         {
             var uid = this.GetUserId();
             var userOwnHouses = await (from own in dbContext.UserOwns
+                                       join project in dbContext.Projects
+                                       on own.ProjectId equals project.Id
                                        where own.UserId == Guid.Parse(uid)
                                        select new
                                        {
                                            own.HouseId,
                                            own.House.ListingName,
                                            HaveProject = own.ProjectId != null,
+                                           HaveProjectPublished = project.IsPublished,
                                        }).AsNoTracking().ToListAsync();
 
             return Ok(new ApiRes("获取成功", userOwnHouses));
