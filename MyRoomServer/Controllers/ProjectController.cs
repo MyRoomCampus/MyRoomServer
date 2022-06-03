@@ -77,14 +77,16 @@ namespace MyRoomServer.Controllers
                 return NotFound(new ApiRes("项目不存在"));
             }
 
-            if(ownInfo.ProjectId == null)
+            if (ownInfo.ProjectId == null)
             {
                 return NotFound(new ApiRes("项目不存在"));
             }
 
             var project = await dbContext.Projects.FindAsync(ownInfo.ProjectId);
 
-            if (project == null || (ownInfo.UserId != Guid.Parse(this.GetUserId()) && project.IsPublished == false))
+            var uid = this.GetUserId();
+
+            if (project == null || ((uid == null || ownInfo.UserId != Guid.Parse(uid)) && project.IsPublished == false))
             {
                 return NotFound(new ApiRes("项目不存在"));
             }
@@ -189,11 +191,11 @@ namespace MyRoomServer.Controllers
             var uid = Guid.Parse(this.GetUserId());
 
             var project = await (from own in dbContext.UserOwns
-                           where own.HouseId == id
-                           where own.UserId == uid
-                           select own.Project).SingleOrDefaultAsync();
+                                 where own.HouseId == id
+                                 where own.UserId == uid
+                                 select own.Project).SingleOrDefaultAsync();
 
-            if(project == null)
+            if (project == null)
             {
                 return NotFound("用户不存在此项目");
             }
