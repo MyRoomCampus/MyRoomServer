@@ -34,8 +34,12 @@ namespace MyRoomServer.Controllers
             var sqlQuery = from house in dbContext.AgentHouses
                            join own in dbContext.UserOwns
                            on house.Id equals own.HouseId
+                           into res1
+                           from own_house in res1
                            join project in dbContext.Projects
-                           on own.ProjectId equals project.Id
+                           on own_house.ProjectId equals project.Id
+                           into res2
+                           from item in res2.DefaultIfEmpty()
                            select new
                            {
                                house.Id,
@@ -92,8 +96,8 @@ namespace MyRoomServer.Controllers
                                house.OnlineAreaId,
                                house.PropertyOnly,
                                house.PropertyCertificatePeriod,
-                               HaveProject = own.ProjectId != null,
-                               HaveProjectPublished = project.IsPublished,
+                               HaveProject = own_house.ProjectId != null,
+                               HaveProjectPublished = item != null && item.IsPublished,
                            };
 
             if (query != null)
@@ -130,8 +134,12 @@ namespace MyRoomServer.Controllers
             var res = await (from house in dbContext.AgentHouses
                              join own in dbContext.UserOwns
                              on house.Id equals own.HouseId
+                             into res1
+                             from own_house in res1
                              join project in dbContext.Projects
-                             on own.ProjectId equals project.Id
+                             on own_house.ProjectId equals project.Id
+                             into res2
+                             from item in res2.DefaultIfEmpty()
                              where house.Id == id
                              select new
                              {
@@ -189,8 +197,8 @@ namespace MyRoomServer.Controllers
                                  house.OnlineAreaId,
                                  house.PropertyOnly,
                                  house.PropertyCertificatePeriod,
-                                 HaveProject = own.ProjectId != null,
-                                 HaveProjectPublished = project.IsPublished,
+                                 HaveProject = own_house.ProjectId != null,
+                                 HaveProjectPublished = item != null && item.IsPublished,
                              }).AsNoTracking().SingleOrDefaultAsync();
 
             if (res == null)
