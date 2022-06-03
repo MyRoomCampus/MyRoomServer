@@ -30,8 +30,68 @@ namespace MyRoomServer.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Get([FromQuery, Required] int page, [FromQuery, Required] int perpage, [FromQuery] string? query)
         {
-            var sqlQuery = (from item in dbContext.AgentHouses
-                            select item);
+            // TODO 因为匿名没法复用 如何优雅的服用此段代码 （太 ...长了 这部分
+            var sqlQuery = from house in dbContext.AgentHouses
+                           join own in dbContext.UserOwns
+                           on house.Id equals own.HouseId
+                           select new
+                           {
+                               house.Id,
+                               house.ListingName,
+                               house.FirstUploadAt,
+                               house.Pricing,
+                               house.Squaremeter,
+                               house.Downpayment,
+                               house.Floor,
+                               house.TotalFloor,
+                               house.DictHouseId,
+                               house.RoomStructure,
+                               house.LadderRation,
+                               house.HeatingType,
+                               house.HouseDuration,
+                               house.PropertyRight,
+                               house.Mortgage,
+                               house.UsageArea,
+                               house.FloorLevel,
+                               house.FacingType,
+                               house.DecorationType,
+                               house.BuildingType,
+                               house.BuiltYear,
+                               house.CityName,
+                               house.CityCode,
+                               house.NeighborhoodName,
+                               house.NeighborhoodSourceCode,
+                               house.FloorPlanRoom,
+                               house.FloorPlanHall,
+                               house.FloorPlanBath,
+                               house.FloorPlanKitchen,
+                               house.HouseType,
+                               house.LayoutType,
+                               house.LastPublishTime,
+                               house.Ownership,
+                               house.RightProperty,
+                               house.PropertyManagementType,
+                               house.Elevator,
+                               house.HouseStatus,
+                               house.OnlineHouseStatus,
+                               house.CreatedAt,
+                               house.UpdatedAt,
+                               house.DataSourceId,
+                               house.OfflineCode,
+                               house.SourceCode,
+                               house.StartVersion,
+                               house.LastVersion,
+                               house.CrawlId,
+                               house.TaskId,
+                               house.HouseCard,
+                               house.OnlineNeighborhoodId,
+                               house.OnlineCityId,
+                               house.OnlineDistrictId,
+                               house.OnlineAreaId,
+                               house.PropertyOnly,
+                               house.PropertyCertificatePeriod,
+                               HaveProject = own.ProjectId != null
+                           };
 
             if (query != null)
             {
@@ -64,7 +124,68 @@ namespace MyRoomServer.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetById([FromRoute] ulong id)
         {
-            var res = await dbContext.AgentHouses.FindAsync(id);
+            var res = await (from house in dbContext.AgentHouses
+                             join own in dbContext.UserOwns
+                             on house.Id equals own.HouseId
+                             where house.Id == id
+                             select new
+                             {
+                                 house.Id,
+                                 house.ListingName,
+                                 house.FirstUploadAt,
+                                 house.Pricing,
+                                 house.Squaremeter,
+                                 house.Downpayment,
+                                 house.Floor,
+                                 house.TotalFloor,
+                                 house.DictHouseId,
+                                 house.RoomStructure,
+                                 house.LadderRation,
+                                 house.HeatingType,
+                                 house.HouseDuration,
+                                 house.PropertyRight,
+                                 house.Mortgage,
+                                 house.UsageArea,
+                                 house.FloorLevel,
+                                 house.FacingType,
+                                 house.DecorationType,
+                                 house.BuildingType,
+                                 house.BuiltYear,
+                                 house.CityName,
+                                 house.CityCode,
+                                 house.NeighborhoodName,
+                                 house.NeighborhoodSourceCode,
+                                 house.FloorPlanRoom,
+                                 house.FloorPlanHall,
+                                 house.FloorPlanBath,
+                                 house.FloorPlanKitchen,
+                                 house.HouseType,
+                                 house.LayoutType,
+                                 house.LastPublishTime,
+                                 house.Ownership,
+                                 house.RightProperty,
+                                 house.PropertyManagementType,
+                                 house.Elevator,
+                                 house.HouseStatus,
+                                 house.OnlineHouseStatus,
+                                 house.CreatedAt,
+                                 house.UpdatedAt,
+                                 house.DataSourceId,
+                                 house.OfflineCode,
+                                 house.SourceCode,
+                                 house.StartVersion,
+                                 house.LastVersion,
+                                 house.CrawlId,
+                                 house.TaskId,
+                                 house.HouseCard,
+                                 house.OnlineNeighborhoodId,
+                                 house.OnlineCityId,
+                                 house.OnlineDistrictId,
+                                 house.OnlineAreaId,
+                                 house.PropertyOnly,
+                                 house.PropertyCertificatePeriod,
+                                 HaveProject = own.ProjectId != null
+                             }).AsNoTracking().SingleOrDefaultAsync();
 
             if (res == null)
             {
@@ -83,16 +204,15 @@ namespace MyRoomServer.Controllers
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
         public async Task<IActionResult> GetByUserId()
         {
-            // TODO 需要优化
             var uid = this.GetUserId();
-            var userOwnHouses = await dbContext.UserOwns
-                .Where(x => x.UserId == Guid.Parse(uid))
-                .Select(x => new
-                {
-                    x.HouseId,
-                    x.House.ListingName,
-                })
-                .ToListAsync();
+            var userOwnHouses = await (from own in dbContext.UserOwns
+                                       where own.UserId == Guid.Parse(uid)
+                                       select new
+                                       {
+                                           own.HouseId,
+                                           own.House.ListingName,
+                                           HaveProject = own.ProjectId != null,
+                                       }).AsNoTracking().ToListAsync();
 
             return Ok(new ApiRes("获取成功", userOwnHouses));
         }
