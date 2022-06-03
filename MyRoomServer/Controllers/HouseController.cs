@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using MyRoomServer.Entities.Contexts;
 using MyRoomServer.Extentions;
 using MyRoomServer.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace MyRoomServer.Controllers
 {
@@ -27,7 +28,7 @@ namespace MyRoomServer.Controllers
         /// <returns></returns>
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> Get([FromQuery] int page, [FromQuery] int perpage, [FromQuery] string? query)
+        public async Task<IActionResult> Get([FromQuery, Required] int page, [FromQuery, Required] int perpage, [FromQuery] string? query)
         {
             var sqlQuery = (from item in dbContext.AgentHouses
                             select item);
