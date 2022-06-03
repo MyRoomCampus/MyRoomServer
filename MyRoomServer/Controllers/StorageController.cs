@@ -26,7 +26,7 @@ namespace MyRoomServer.Controllers
             var mac = new Mac(config.AccessKey, config.SecretKey);
             var putPolicy = new PutPolicy
             {
-                Scope = config.Bucket
+                Scope = config.Bucket,
             };
 
             var token = Auth.CreateUploadToken(mac, putPolicy.ToJsonString());
