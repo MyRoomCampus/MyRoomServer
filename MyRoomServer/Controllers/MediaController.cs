@@ -5,6 +5,7 @@ using MyRoomServer.Entities;
 using MyRoomServer.Entities.Contexts;
 using MyRoomServer.Extentions;
 using MyRoomServer.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace MyRoomServer.Controllers
 {
@@ -74,7 +75,7 @@ namespace MyRoomServer.Controllers
         /// <response code="413">资源过大</response>
         [HttpPost]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
-        public async Task<IActionResult> OnPost([FromForm] IFormFile resource, [FromForm] string type)
+        public async Task<IActionResult> OnPost([FromForm, Required] IFormFile resource, [FromForm, Required] string type)
         {
             if (resource.Length > 1024 * 1024 * 100) return await Task.FromResult(StatusCode(413));
             var buffer = new byte[resource.Length];

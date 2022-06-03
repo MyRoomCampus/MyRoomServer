@@ -5,6 +5,7 @@ using MyRoomServer.Models;
 using MyRoomServer.Extentions;
 using Microsoft.EntityFrameworkCore;
 using MyRoomServer.Entities.Contexts;
+using System.ComponentModel.DataAnnotations;
 
 namespace MyRoomServer.Controllers
 {
@@ -27,7 +28,7 @@ namespace MyRoomServer.Controllers
         /// <returns></returns>
         [HttpGet]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
-        public async Task<IActionResult> Get([FromQuery] int page, [FromQuery] int perpage)
+        public async Task<IActionResult> Get([FromQuery, Required] int page, [FromQuery, Required] int perpage)
         {
             var uid = this.GetUserId();
 
@@ -111,7 +112,7 @@ namespace MyRoomServer.Controllers
         /// <response code="401">此房产信息不属于该用户</response>
         [HttpPost]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
-        public async Task<IActionResult> PostAsync([FromBody] TransferProject project)
+        public async Task<IActionResult> PostAsync([FromBody, Required] TransferProject project)
         {
             var uid = Guid.Parse(this.GetUserId());
 
@@ -146,7 +147,7 @@ namespace MyRoomServer.Controllers
         /// <returns></returns>
         [HttpPut]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
-        public async Task<IActionResult> PutAsync([FromBody] TransferProject transferProject)
+        public async Task<IActionResult> PutAsync([FromBody, Required] TransferProject transferProject)
         {
             var uid = Guid.Parse(this.GetUserId());
 
@@ -186,7 +187,7 @@ namespace MyRoomServer.Controllers
         /// <returns></returns>
         [HttpPut("publish/{id}")]
         [Authorize(Policy = IdentityPolicyNames.CommonUser)]
-        public async Task<IActionResult> PutIsPublish([FromRoute] ulong id, [FromForm] bool isPublish)
+        public async Task<IActionResult> PutIsPublish([FromRoute] ulong id, [FromForm, Required] bool isPublish)
         {
             var uid = Guid.Parse(this.GetUserId());
 

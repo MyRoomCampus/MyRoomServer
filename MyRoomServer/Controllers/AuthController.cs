@@ -164,7 +164,7 @@ namespace MyRoomServer.Controllers
         [HttpGet("check-username/{username}")]
         [AllowAnonymous]
         public async Task<IActionResult> UpdateUserValidateInfoAsync(
-            [MinLength(6), MaxLength(20)] string username)
+            [MinLength(6), MaxLength(20), FromRoute] string username)
         {
             var ok = await (from item in dbContext.Users
                             where item.UserName == username
