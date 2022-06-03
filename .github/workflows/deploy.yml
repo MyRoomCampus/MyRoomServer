@@ -20,5 +20,8 @@ jobs:
           ConnectionStrings__MyRoom: ${{secrets.CONNECTIONSTRINGS__MYROOM}}
           Jwt__SecurityKey: ${{secrets.JWT__SECURITYKEY}}
           PasswordSalt: ${{secrets.PASSWORDSALT}}
+          Qiniu__AccessKey: ${{secrets.QINIU__ACCESSKEY}}
+          Qiniu__SecretKey: ${{secrets.QINIU__SECRETKEY}}
+          Qiniu__Bucket: ${{secrets.QINIU__BUCKET}}
         run: |
           docker compose up -d --build
