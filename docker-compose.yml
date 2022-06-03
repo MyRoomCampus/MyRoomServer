@@ -12,6 +12,9 @@ services:
       - ConnectionStrings__MyRoom=${ConnectionStrings__MyRoom:?}
       - Jwt__SecurityKey=${Jwt__SecurityKey:?}
       - PasswordSalt=${PasswordSalt:?}
+      - Qiniu__AccessKey=${Qiniu__AccessKey:?}
+      - Qiniu__SecretKey=${Qiniu__SecretKey:?}
+      - Qiniu__Bucket=${Qiniu__Bucket:?}
     ports:
       - "${DEPLOY_PORT}:80"
     restart: always
