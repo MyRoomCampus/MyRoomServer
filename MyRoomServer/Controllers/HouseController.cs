@@ -220,15 +220,17 @@ namespace MyRoomServer.Controllers
         {
             var uid = this.GetUserId();
             var userOwnHouses = await (from own in dbContext.UserOwns
+                                       where own.UserId == Guid.Parse(uid)
                                        join project in dbContext.Projects
                                        on own.ProjectId equals project.Id
-                                       where own.UserId == Guid.Parse(uid)
+                                       into res
+                                       from item in res.DefaultIfEmpty()
                                        select new
                                        {
                                            own.HouseId,
                                            own.House.ListingName,
                                            HaveProject = own.ProjectId != null,
-                                           HaveProjectPublished = project.IsPublished,
+                                           HaveProjectPublished = item != null && item.IsPublished,
                                        }).AsNoTracking().ToListAsync();
 
             return Ok(new ApiRes("获取成功", userOwnHouses));
