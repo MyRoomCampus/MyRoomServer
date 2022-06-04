@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Caching.Memory;
 using MyRoomServer.Extentions;
 using MyRoomServer.Models;
 
@@ -12,17 +11,17 @@ namespace MyRoomServer.Hubs
         /// <summary>
         /// 需要重复访问来确保缓存不会失效
         /// </summary>
-        /// <param name="projectId"></param>
+        /// <param name="houseId"></param>
         /// <returns></returns>
-        public async Task SendVisit(ulong projectId)
+        public async Task SendVisit(ulong houseId)
         {
-            var connectionInfo = new ConnectionInfo(ConnectionType.User, Context.ConnectionId, this.GetUserName(), projectId);
+            var connectionInfo = new ConnectionInfo(ConnectionType.User, Context.ConnectionId, this.GetUserName(), houseId);
 
             SetConnectionInfo(Context.ConnectionId, in connectionInfo);
 
             // TODO 线程不安全
             // 当 project 信息不存在时, 新建 project, 当 admin 在线时, 给 admin 发送上线消息
-            if (TryGetProjectInfo(projectId, out var info))
+            if (TryGetProjectInfo(houseId, out var info))
             {
                 if (info.AdminConnectionId != null)
                 {
@@ -34,20 +33,20 @@ namespace MyRoomServer.Hubs
             {
                 info = new ProjectInfo(null, new Dictionary<string, ConnectionInfo> { { Context.ConnectionId, connectionInfo } });
             }
-            SetProjectInfo(projectId, in info);
+            SetProjectInfo(houseId, in info);
         }
 
         /// <summary>
         /// 项目管理者访问以获取该项目当前的访客
         /// </summary>
-        /// <param name="projectId"></param>
+        /// <param name="houseId"></param>
         /// <returns></returns>
-        public async Task SendObserve(ulong projectId)
+        public async Task SendObserve(ulong houseId)
         {
-            var identifier = Context.UserIdentifier!;
+            var uid = Guid.Parse(Context.UserIdentifier!);
             var hasProject = (from item in dbContext.UserOwns
-                              where item.ProjectId == projectId
-                              where item.UserId == Guid.Parse(identifier)
+                              where item.HouseId == houseId
+                              where item.UserId == uid
                               select item).Any();
 
             if (!hasProject)
@@ -56,11 +55,11 @@ namespace MyRoomServer.Hubs
                 return;
             }
 
-            var connectionInfo = new ConnectionInfo(ConnectionType.Admin, Context.ConnectionId, this.GetUserName(), projectId);
+            var connectionInfo = new ConnectionInfo(ConnectionType.Admin, Context.ConnectionId, this.GetUserName(), houseId);
             SetConnectionInfo(Context.ConnectionId, in connectionInfo);
 
             // TODO 线程不安全
-            if (TryGetProjectInfo(projectId, out var info))
+            if (TryGetProjectInfo(houseId, out var info))
             {
                 info = info with { AdminConnectionId = Context.ConnectionId };
             }
@@ -68,7 +67,7 @@ namespace MyRoomServer.Hubs
             {
                 info = new ProjectInfo(Context.ConnectionId, new Dictionary<string, ConnectionInfo>());
             }
-            SetProjectInfo(projectId, info);
+            SetProjectInfo(houseId, info);
             await SendVisitToClient(info);
         }
 
