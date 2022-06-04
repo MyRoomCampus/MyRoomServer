@@ -37,7 +37,14 @@ namespace MyRoomServer.Hubs
                 return;
             }
 
-            await Clients.Client(adminConnectionId).SendAsync(ReceiveMethods.ReceiveVisit, info.ClientInfos);
+            var sendValues = from item in info.ClientInfos.Values
+            select new
+            {
+                UserName = item.UserName,
+                ConnectionId = item.ConnectionId,
+            };
+
+            await Clients.Client(adminConnectionId).SendAsync(ReceiveMethods.ReceiveVisit, sendValues);
         }
     }
 }
