@@ -10,7 +10,8 @@ namespace MyRoomServer.Hubs
         private static class CacheKeys
         {
             const string KeyConnectionInfo = $"_{nameof(KeyConnectionInfo)}_";
-            const string KeyProjectInfo = $"_${nameof(KeyProjectInfo)}_";
+            const string KeyProjectInfo = $"_{nameof(KeyProjectInfo)}_";
+            const string KeyOfferInfo = $"_{nameof(KeyOfferInfo)}_";
 
             public static string GetConnectionInfo(string connectionId)
             {
@@ -21,6 +22,21 @@ namespace MyRoomServer.Hubs
             {
                 return $"{KeyProjectInfo}{projectId}";
             }
+
+            public static string GetOfferInfo(string offerKey)
+            {
+                return $"{KeyOfferInfo}{offerKey}";
+            }
+        }
+
+        private void SetOfferInfo(string offerKey, string adminConnectionId, string clientConnectionId)
+        {
+            cache.Set(CacheKeys.GetOfferInfo(offerKey), new OfferInfo(adminConnectionId, clientConnectionId), new TimeSpan(0, 1, 0));
+        }
+
+        private OfferInfo? GetOfferInfo(string offerKey)
+        {
+            return cache.Get(CacheKeys.GetOfferInfo(offerKey)) as OfferInfo;
         }
 
         private void SetConnectionInfo(string connectionId, in ConnectionInfo info)
