@@ -136,10 +136,20 @@ namespace MyRoomServer.Hubs
             await Clients.All.SendAsync(ReceiveMethods.ReveiveAnswer, answer);
         }
 
+        public override Task OnConnectedAsync()
+        {
+            Console.WriteLine($"Online event: {Context.ConnectionId}, {this.GetUserName()}, {DateTime.Now}");
+            return base.OnConnectedAsync();
+        }
+
         public override Task OnDisconnectedAsync(Exception? exception)
         {
             Console.WriteLine($"Offline event: {Context.ConnectionId}, {this.GetUserName()}, {DateTime.Now}");
-            RemoveConnectionInfo(Context.ConnectionId);
+            var info = RemoveConnectionInfo(Context.ConnectionId);
+            if(info != null)
+            {
+                _ = SendVisitToClient(info);
+            }
             return base.OnDisconnectedAsync(exception);
         }
     }

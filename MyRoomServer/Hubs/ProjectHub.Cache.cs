@@ -53,24 +53,25 @@ namespace MyRoomServer.Hubs
             return cache.TryGetValue(CacheKeys.GetConnectionInfo(connectionId), out value);
         }
 
-        private void RemoveConnectionInfo(string connectionId)
+        private ProjectInfo? RemoveConnectionInfo(string connectionId)
         {
             var hasConnectionInfo = TryGetConnectionInfo(connectionId, out var connectionInfo);
             if (!hasConnectionInfo)
             {
-                return;
+                return null;
             }
             cache.Remove(CacheKeys.GetConnectionInfo(connectionId));
             var hasProjectInfo = TryGetProjectInfo(connectionInfo.ProjectId, out var projectInfo);
             if (connectionInfo.Type == ConnectionType.Admin)
             {
                 SetProjectInfo(connectionInfo.ProjectId, projectInfo with { AdminConnectionId = null });
-
+                return null;
             }
             else
             {
                 projectInfo.ClientInfos.Remove(connectionId);
                 SetProjectInfo(connectionInfo.ProjectId, projectInfo);
+                return projectInfo;
             }
         }
 
