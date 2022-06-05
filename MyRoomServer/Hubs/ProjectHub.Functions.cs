@@ -47,5 +47,10 @@ namespace MyRoomServer.Hubs
 
             await Clients.Client(adminConnectionId).SendAsync(ReceiveMethods.ReceiveVisit, sendValues);
         }
+
+        private async Task SendDebugToCaller(string msg)
+        {
+            await Clients.Caller.SendAsync(ReceiveMethods.ReceiveDebug, $"ConnectionId: {Context.ConnectionId}, {msg}.");
+        }
     }
 }

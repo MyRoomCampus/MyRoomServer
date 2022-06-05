@@ -25,12 +25,12 @@ namespace MyRoomServer.Hubs
             {
                 if (info.AdminConnectionId != null)
                 {
-                    await Clients.Caller.SendAsync(ReceiveMethods.ReceiveDebug, $"ConnectionId: {Context.ConnectionId}, admin is online.");
+                    await SendDebugToCaller("admin is online.");
                     await SendVisitToClient(info);
                 }
                 else
                 {
-                    await Clients.Caller.SendAsync(ReceiveMethods.ReceiveDebug, $"ConnectionId: {Context.ConnectionId}, admin is offline.");
+                    await SendDebugToCaller("admin is offline.");
                 }
                 info.AddClientInfo(connectionInfo);
             }
@@ -56,7 +56,7 @@ namespace MyRoomServer.Hubs
 
             if (!hasProject)
             {
-                await Clients.Caller.SendAsync(ReceiveMethods.ReceiveDebug, $"ConnectionId: {Context.ConnectionId}, don't have the specific project.");
+                await SendDebugToCaller("don't have the specific project.");
                 return;
             }
 
@@ -72,7 +72,7 @@ namespace MyRoomServer.Hubs
             {
                 info = new ProjectInfo(Context.ConnectionId, null);
             }
-            await Clients.Caller.SendAsync(ReceiveMethods.ReceiveDebug, $"ConnectionId: {Context.ConnectionId}, send observe successful.");
+            await SendDebugToCaller("send observe successful.");
             SetProjectInfo(houseId, info);
             await SendVisitToClient(info);
         }
