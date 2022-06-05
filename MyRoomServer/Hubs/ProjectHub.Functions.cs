@@ -21,6 +21,7 @@ namespace MyRoomServer.Hubs
             public const string ReceiceIceCandidate = nameof(ReceiceIceCandidate);
             public const string ReceiveOffer = nameof(ReceiveOffer);
             public const string ReveiveAnswer = nameof(ReveiveAnswer);
+            public const string ReceiveDebug = nameof(ReceiveDebug);
         }
 
         public ProjectHub(IMemoryCache cache, MyRoomDbContext dbContext)
@@ -38,11 +39,11 @@ namespace MyRoomServer.Hubs
             }
 
             var sendValues = from item in info.ClientInfos.Values
-            select new
-            {
-                UserName = item.UserName,
-                ConnectionId = item.ConnectionId,
-            };
+                             select new
+                             {
+                                 UserName = item.UserName,
+                                 ConnectionId = item.ConnectionId,
+                             };
 
             await Clients.Client(adminConnectionId).SendAsync(ReceiveMethods.ReceiveVisit, sendValues);
         }
