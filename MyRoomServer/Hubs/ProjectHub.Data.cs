@@ -18,6 +18,8 @@
             Admin
         }
 
+        private record OfferInfo(string Admin, string Client);
+
         private record ConnectionInfo(ConnectionType Type, string ConnectionId, string UserName, ulong ProjectId);
 
         private class ProjectInfo
