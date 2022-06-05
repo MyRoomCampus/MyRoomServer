@@ -19,9 +19,9 @@ namespace MyRoomServer.Hubs
 
             SetConnectionInfo(Context.ConnectionId, in connectionInfo);
 
-            // TODO 线程不安全
             // 当 project 信息不存在时, 新建 project, 当 admin 在线时, 给 admin 发送上线消息
-            if (TryGetProjectInfo(houseId, out var info))
+            var info = GetProjectInfo(houseId);
+            if (info != null)
             {
                 if (info.AdminConnectionId != null)
                 {
@@ -32,11 +32,11 @@ namespace MyRoomServer.Hubs
                 {
                     await Clients.Caller.SendAsync(ReceiveMethods.ReceiveDebug, $"ConnectionId: {Context.ConnectionId}, admin is offline.");
                 }
-                info.ClientInfos.Add(Context.ConnectionId, connectionInfo);
+                info.AddClientInfo(connectionInfo);
             }
             else
             {
-                info = new ProjectInfo(null, new Dictionary<string, ConnectionInfo> { { Context.ConnectionId, connectionInfo } });
+                info = new ProjectInfo(null, connectionInfo);
             }
             SetProjectInfo(houseId, in info);
         }
@@ -63,14 +63,14 @@ namespace MyRoomServer.Hubs
             var connectionInfo = new ConnectionInfo(ConnectionType.Admin, Context.ConnectionId, this.GetUserName(), houseId);
             SetConnectionInfo(Context.ConnectionId, in connectionInfo);
 
-            // TODO 线程不安全
-            if (TryGetProjectInfo(houseId, out var info))
+            var info = GetProjectInfo(houseId);
+            if (info != null)
             {
-                info = info with { AdminConnectionId = Context.ConnectionId };
+                info.AdminConnectionId = Context.ConnectionId;
             }
             else
             {
-                info = new ProjectInfo(Context.ConnectionId, new Dictionary<string, ConnectionInfo>());
+                info = new ProjectInfo(Context.ConnectionId, null);
             }
             await Clients.Caller.SendAsync(ReceiveMethods.ReceiveDebug, $"ConnectionId: {Context.ConnectionId}, send observe successful.");
             SetProjectInfo(houseId, info);
@@ -146,7 +146,7 @@ namespace MyRoomServer.Hubs
         {
             Console.WriteLine($"Offline event: {Context.ConnectionId}, {this.GetUserName()}, {DateTime.Now}");
             var info = RemoveConnectionInfo(Context.ConnectionId);
-            if(info != null)
+            if (info != null)
             {
                 _ = SendVisitToClient(info);
             }

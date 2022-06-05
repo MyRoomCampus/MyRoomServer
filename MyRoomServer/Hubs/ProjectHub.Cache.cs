@@ -5,26 +5,6 @@ namespace MyRoomServer.Hubs
     public partial class ProjectHub
     {
         /// <summary>
-        /// 连接的类型
-        /// </summary>
-        private enum ConnectionType
-        {
-            /// <summary>
-            /// 一般客户
-            /// </summary>
-            User,
-
-            /// <summary>
-            /// 经纪人
-            /// </summary>
-            Admin
-        }
-
-        private record ConnectionInfo(ConnectionType Type, string ConnectionId, string UserName, ulong ProjectId);
-
-        private record ProjectInfo(string? AdminConnectionId, Dictionary<string, ConnectionInfo> ClientInfos);
-
-        /// <summary>
         /// 用于缓存的键
         /// </summary>
         private static class CacheKeys
@@ -48,23 +28,40 @@ namespace MyRoomServer.Hubs
             cache.Set(CacheKeys.GetConnectionInfo(connectionId), info, new TimeSpan(0, 10, 0));
         }
 
-        private bool TryGetConnectionInfo(string connectionId, out ConnectionInfo value)
+        private ConnectionInfo? GetConnectionInfo(string connectionId)
         {
-            return cache.TryGetValue(CacheKeys.GetConnectionInfo(connectionId), out value);
+            return cache.Get(CacheKeys.GetConnectionInfo(connectionId)) as ConnectionInfo;
+        }
+
+        private void SetProjectInfo(ulong projectId, in ProjectInfo info)
+        {
+            cache.Set(CacheKeys.GetProjectInfo(projectId), info, new TimeSpan(0, 10, 0));
+        }
+
+        private ProjectInfo? GetProjectInfo(ulong projectId)
+        {
+            return cache.Get(CacheKeys.GetProjectInfo(projectId)) as ProjectInfo;
         }
 
         private ProjectInfo? RemoveConnectionInfo(string connectionId)
         {
-            var hasConnectionInfo = TryGetConnectionInfo(connectionId, out var connectionInfo);
-            if (!hasConnectionInfo)
+            var connectionInfo = GetConnectionInfo(connectionId);
+            if (connectionInfo == null)
             {
                 return null;
             }
             cache.Remove(CacheKeys.GetConnectionInfo(connectionId));
-            var hasProjectInfo = TryGetProjectInfo(connectionInfo.ProjectId, out var projectInfo);
+
+            var projectInfo = GetProjectInfo(connectionInfo.ProjectId);
+            if (projectInfo == null)
+            {
+                return null;
+            }
+
             if (connectionInfo.Type == ConnectionType.Admin)
             {
-                SetProjectInfo(connectionInfo.ProjectId, projectInfo with { AdminConnectionId = null });
+                projectInfo.AdminConnectionId = null;
+                SetProjectInfo(connectionInfo.ProjectId, projectInfo);
                 return null;
             }
             else
@@ -73,16 +70,6 @@ namespace MyRoomServer.Hubs
                 SetProjectInfo(connectionInfo.ProjectId, projectInfo);
                 return projectInfo;
             }
-        }
-
-        private void SetProjectInfo(ulong projectId, in ProjectInfo info)
-        {
-            cache.Set(CacheKeys.GetProjectInfo(projectId), info, new TimeSpan(0, 10, 0));
-        }
-
-        private bool TryGetProjectInfo(ulong projectId, out ProjectInfo info)
-        {
-            return cache.TryGetValue(CacheKeys.GetProjectInfo(projectId), out info);
         }
     }
 }
