@@ -39,11 +39,11 @@ namespace MyRoomServer.Hubs
             }
 
             var sendValues = from item in info.ClientInfos.Values
-            select new
-            {
-                UserName = item.UserName,
-                ConnectionId = item.ConnectionId,
-            };
+                             select new
+                             {
+                                 UserName = item.UserName,
+                                 ConnectionId = item.ConnectionId,
+                             };
 
             await Clients.Client(adminConnectionId).SendAsync(ReceiveMethods.ReceiveVisit, sendValues);
         }
