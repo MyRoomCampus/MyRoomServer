@@ -35,6 +35,7 @@ namespace MyRoomServer.Controllers
             var query = (from own in dbContext.UserOwns
                          join project in dbContext.Projects
                          on own.ProjectId equals project.Id
+                         where own.UserId == Guid.Parse(uid)
                          select new
                          {
                              own.HouseId,
