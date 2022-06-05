@@ -25,7 +25,12 @@ namespace MyRoomServer.Hubs
             {
                 if (info.AdminConnectionId != null)
                 {
+                    await Clients.Caller.SendAsync(ReceiveMethods.ReceiveDebug, $"ConnectionId: {Context.ConnectionId}, admin is online.");
                     await SendVisitToClient(info);
+                }
+                else
+                {
+                    await Clients.Caller.SendAsync(ReceiveMethods.ReceiveDebug, $"ConnectionId: {Context.ConnectionId}, admin is offline.");
                 }
                 info.ClientInfos.Add(Context.ConnectionId, connectionInfo);
             }
@@ -51,7 +56,7 @@ namespace MyRoomServer.Hubs
 
             if (!hasProject)
             {
-                // TODO 这里需要给用户通知吗？
+                await Clients.Caller.SendAsync(ReceiveMethods.ReceiveDebug, $"ConnectionId: {Context.ConnectionId}, don't have the specific project.");
                 return;
             }
 
@@ -67,6 +72,7 @@ namespace MyRoomServer.Hubs
             {
                 info = new ProjectInfo(Context.ConnectionId, new Dictionary<string, ConnectionInfo>());
             }
+            await Clients.Caller.SendAsync(ReceiveMethods.ReceiveDebug, $"ConnectionId: {Context.ConnectionId}, send observe successful.");
             SetProjectInfo(houseId, info);
             await SendVisitToClient(info);
         }
@@ -117,7 +123,6 @@ namespace MyRoomServer.Hubs
             // todo 从 connectionId 获取 projectId
             // todo 从 project 的客户中找出 user 对应的connectionId
 
-            // 
             await Clients.All.SendAsync(ReceiveMethods.ReceiceIceCandidate, user, candidate);
         }
 
@@ -133,6 +138,7 @@ namespace MyRoomServer.Hubs
 
         public override Task OnDisconnectedAsync(Exception? exception)
         {
+            Console.WriteLine($"Offline event: {Context.ConnectionId}, {this.GetUserName()}, {DateTime.Now}");
             RemoveConnectionInfo(Context.ConnectionId);
             return base.OnDisconnectedAsync(exception);
         }
