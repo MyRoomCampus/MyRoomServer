@@ -94,15 +94,13 @@ namespace MyRoomServer.Hubs
         /// <summary>
         /// 协商是否进行此次通话
         /// </summary>
-        /// <param name="user">客户的用户名</param>
+        /// <param name="connectionId">客户的connectionId</param>
         /// <param name="offerKey"></param>
         /// <returns></returns>
-        public async Task SendPreOffer(string user, string offerKey)
+        public async Task SendPreOffer(string offerKey, string connectionId)
         {
-            // todo 从 connectionId 获取 projectId
-            // todo 从 project 的客户中找出 user 对应的connectionId
-            // todo 发送消息
-            throw new NotImplementedException();
+            SetOfferInfo(offerKey, Context.ConnectionId, connectionId);
+            await Clients.Client(connectionId).SendAsync(ReceiveMethods.ReceivePreOffer, offerKey);
         }
 
         /// <summary>
@@ -113,27 +111,57 @@ namespace MyRoomServer.Hubs
         /// <returns></returns>
         public async Task SendPreAnswer(string offerKey, bool agree)
         {
-            // 找出 connectionId 对应的 project
-            // 从 project 找出对应的 经纪人 connectionId
-            throw new NotImplementedException();
+            var offerInfo = GetOfferInfo(offerKey);
+            if(offerInfo == null)
+            {
+                await SendDebugToCaller("offerKey is null.");
+                return;
+            }
+            await Clients.Client(offerInfo.Admin).SendAsync(ReceiveMethods.ReceivePreAnswer, offerKey, agree);
         }
 
-        public async Task SendIceCandidate(string user, string candidate)
+        public async Task SendIceCandidateOffer(string offerKey, string candidate)
         {
-            // todo 从 connectionId 获取 projectId
-            // todo 从 project 的客户中找出 user 对应的connectionId
-
-            await Clients.All.SendAsync(ReceiveMethods.ReceiceIceCandidate, user, candidate);
+            var offerInfo = GetOfferInfo(offerKey);
+            if(offerInfo == null)
+            {
+                await SendDebugToCaller("offerKey is null");
+                return;
+            }
+            await Clients.Client(offerInfo.Client).SendAsync(ReceiveMethods.ReceiceIceCandidate, offerKey, candidate);
         }
 
-        public async Task SendOffer(string user, string offer)
+        public async Task SendIceCandidateAnser(string offerKey, string candidate)
         {
-            await Clients.All.SendAsync(ReceiveMethods.ReceiveOffer, offer);
+            var offerInfo = GetOfferInfo(offerKey);
+            if (offerInfo == null)
+            {
+                await SendDebugToCaller("offerKey is null");
+                return;
+            }
+            await Clients.Client(offerInfo.Admin).SendAsync(ReceiveMethods.ReceiceIceCandidate, offerKey, candidate);
         }
 
-        public async Task SendAnswer(string user, string answer)
+        public async Task SendOffer(string offerKey, string offer)
         {
-            await Clients.All.SendAsync(ReceiveMethods.ReveiveAnswer, answer);
+            var offerInfo = GetOfferInfo(offerKey);
+            if (offerInfo == null)
+            {
+                await SendDebugToCaller("offerKey is null");
+                return;
+            }
+            await Clients.Client(offerInfo.Client).SendAsync(ReceiveMethods.ReceiveOffer, offerKey, offer);
+        }
+
+        public async Task SendAnswer(string offerKey, string answer)
+        {
+            var offerInfo = GetOfferInfo(offerKey);
+            if (offerInfo == null)
+            {
+                await SendDebugToCaller("offerKey is null");
+                return;
+            }
+            await Clients.Client(offerInfo.Admin).SendAsync(ReceiveMethods.ReveiveAnswer, offerKey, answer);
         }
 
         public override Task OnConnectedAsync()
